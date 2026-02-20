@@ -1,0 +1,16 @@
+[run]
+branch = True
+source =
+    pico_client_auth
+omit =
+    */_version.py
+
+[paths]
+pico_client_auth =
+    src/pico_client_auth
+    .tox/*/lib/*/site-packages/pico_client_auth
+    .tox/*/site-packages/pico_client_auth
+    */site-packages/pico_client_auth
+
+[report]
+show_missing = True

@@ -1,0 +1,156 @@
+site_name: Pico-Client-Auth Documentation
+site_description: JWT authentication client for pico-fastapi with SecurityContext, role-based access control, and JWKS key rotation
+site_url: https://dperezcabrera.github.io/pico-client-auth/
+
+repo_name: dperezcabrera/pico-client-auth
+repo_url: https://github.com/dperezcabrera/pico-client-auth
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; 2025–2026 Pico-Client-Auth
+
+strict: true
+
+theme:
+  name: material
+  language: en
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - announce.dismiss
+  icon:
+    repo: fontawesome/brands/github
+    admonition:
+      note: octicons/tag-16
+      abstract: octicons/checklist-16
+      info: octicons/info-16
+      tip: octicons/squirrel-16
+      success: octicons/check-16
+      question: octicons/question-16
+      warning: octicons/alert-16
+      failure: octicons/x-circle-16
+      danger: octicons/zap-16
+      bug: octicons/bug-16
+      example: octicons/beaker-16
+      quote: octicons/quote-16
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/dperezcabrera/pico-client-auth
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/pico-client-auth/
+  analytics:
+    provider: google
+    property: !ENV GOOGLE_ANALYTICS_KEY
+
+extra_css:
+  - stylesheets/extra.css
+extra_javascript:
+  - javascripts/extra.js
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+hooks:
+  - docs/hooks.py
+
+plugins:
+  - search:
+      separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            show_source: true
+            show_root_heading: true
+            members_order: source
+            docstring_style: google
+  - minify:
+      minify_html: true
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: timeago
+      fallback_to_build_date: true
+      strict: false
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Tutorial: tutorial.md
+  - User Guide:
+    - user-guide/index.md
+    - SecurityContext: user-guide/security-context.md
+    - Role Resolver: user-guide/role-resolver.md
+  - How-To Guides:
+    - how-to/index.md
+    - Custom Role Resolver: how-to/custom-roles.md
+    - Public Endpoints: how-to/allow-anonymous.md
+    - Testing Auth: how-to/testing.md
+  - Reference:
+    - reference/index.md
+    - Configuration: reference/config.md
+    - Exceptions: reference/exceptions.md
+  - Architecture: architecture.md
+  - FAQ: faq.md
