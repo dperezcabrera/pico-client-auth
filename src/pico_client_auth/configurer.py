@@ -64,7 +64,7 @@ class AuthFastapiConfigurer:
             if not settings.audience:
                 raise AuthConfigurationError("auth_client.audience must be set when auth is enabled")
 
-    def configure(self, app: FastAPI) -> None:
+    def configure_app(self, app: FastAPI) -> None:
         """Register the auth middleware on the FastAPI app."""
         if not self._settings.enabled:
             logger.info("Auth client middleware is disabled")

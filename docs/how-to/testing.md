@@ -101,7 +101,7 @@ def app(jwk_dict):
     )
 
     app = FastAPI()
-    configurer.configure(app)
+    configurer.configure_app(app)
 
     @app.get("/protected")
     async def protected():

@@ -40,7 +40,7 @@ def _build_app(settings, jwk_dict):
     validator = TokenValidator(settings=settings, jwks_client=mock_jwks)
     resolver = DefaultRoleResolver()
     configurer = AuthFastapiConfigurer(settings=settings, token_validator=validator, role_resolver=resolver)
-    configurer.configure(app)
+    configurer.configure_app(app)
 
     @app.get("/protected")
     async def protected(request: Request):
@@ -177,4 +177,4 @@ class TestFailFastConfiguration:
         # Should not raise
         configurer = AuthFastapiConfigurer(settings=settings, token_validator=validator, role_resolver=resolver)
         app = FastAPI()
-        configurer.configure(app)  # Should log info, not add middleware
+        configurer.configure_app(app)  # Should log info, not add middleware
