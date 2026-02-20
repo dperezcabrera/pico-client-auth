@@ -40,7 +40,7 @@ classifiers = [
 
 dependencies = [
     "pico-ioc >= 2.2.3",
-    "pico-fastapi >= 0.1.0",
+    "pico-fastapi >= 0.3.0",
     "python-jose[cryptography] >= 3.3",
     "httpx >= 0.24",
 ]
