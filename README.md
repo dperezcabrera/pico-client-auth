@@ -1,6 +1,11 @@
 # Pico-Client-Auth
 
+[![PyPI](https://img.shields.io/pypi/v/pico-client-auth.svg)](https://pypi.org/project/pico-client-auth/)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/dperezcabrera/pico-client-auth)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+![CI (tox matrix)](https://github.com/dperezcabrera/pico-client-auth/actions/workflows/ci.yml/badge.svg)
+[![codecov](https://codecov.io/gh/dperezcabrera/pico-client-auth/branch/main/graph/badge.svg)](https://codecov.io/gh/dperezcabrera/pico-client-auth)
+[![Docs](https://img.shields.io/badge/Docs-pico--client--auth-blue?style=flat&logo=readthedocs&logoColor=white)](https://dperezcabrera.github.io/pico-client-auth/)
 
 **[Pico-Client-Auth](https://github.com/dperezcabrera/pico-client-auth)** provides JWT authentication for **[pico-fastapi](https://github.com/dperezcabrera/pico-fastapi)** applications. It integrates with the pico-ioc container to deliver automatic Bearer token validation, a request-scoped `SecurityContext`, role-based access control, and JWKS key rotation support.
 
