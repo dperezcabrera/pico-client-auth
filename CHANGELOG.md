@@ -6,7 +6,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
-## v0.2.0 — Groups Support (2026-02-21)
+## v0.3.0 — Groups Support (2026-02-21)
 
 ### Added
 
