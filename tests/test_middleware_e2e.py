@@ -10,7 +10,7 @@ from starlette.routing import Match
 
 from pico_client_auth.config import AuthClientSettings
 from pico_client_auth.configurer import AuthFastapiConfigurer, _find_endpoint
-from pico_client_auth.decorators import allow_anonymous, requires_role
+from pico_client_auth.decorators import allow_anonymous, requires_group, requires_role
 from pico_client_auth.errors import AuthConfigurationError
 from pico_client_auth.jwks_client import JWKSClient
 from pico_client_auth.role_resolver import DefaultRoleResolver
@@ -61,6 +61,11 @@ def _build_app(settings, jwk_dict):
     @app.get("/editor-or-admin")
     @requires_role("editor", "admin")
     async def editor_or_admin():
+        return {"ok": True}
+
+    @app.get("/group-only")
+    @requires_group("team-alpha")
+    async def group_only():
         return {"ok": True}
 
     return app
@@ -130,6 +135,27 @@ class TestRequiresRole:
         token = make_token(role="editor")
         resp = await client.get("/editor-or-admin", headers={"Authorization": f"Bearer {token}"})
         assert resp.status_code == 200
+
+
+class TestRequiresGroup:
+    @pytest.mark.asyncio
+    async def test_403_without_required_group(self, client, make_token):
+        token = make_token(groups=["team-beta"])
+        resp = await client.get("/group-only", headers={"Authorization": f"Bearer {token}"})
+        assert resp.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_200_with_required_group(self, client, make_token):
+        token = make_token(groups=["team-alpha"])
+        resp = await client.get("/group-only", headers={"Authorization": f"Bearer {token}"})
+        assert resp.status_code == 200
+        assert resp.json()["ok"] is True
+
+    @pytest.mark.asyncio
+    async def test_403_with_no_groups(self, client, make_token):
+        token = make_token(groups=[])
+        resp = await client.get("/group-only", headers={"Authorization": f"Bearer {token}"})
+        assert resp.status_code == 403
 
 
 class TestSecurityContextInHandler:

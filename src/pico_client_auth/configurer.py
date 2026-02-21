@@ -8,7 +8,7 @@ from starlette.responses import JSONResponse
 from starlette.routing import Match
 
 from .config import AuthClientSettings
-from .decorators import PICO_ALLOW_ANONYMOUS, PICO_REQUIRED_ROLES
+from .decorators import PICO_ALLOW_ANONYMOUS, PICO_REQUIRED_GROUPS, PICO_REQUIRED_ROLES
 from .errors import (
     AuthClientError,
     AuthConfigurationError,
@@ -98,6 +98,14 @@ class AuthFastapiConfigurer:
                 if required_roles and not set(roles).intersection(required_roles):
                     return JSONResponse(
                         {"detail": f"Requires one of roles: {sorted(required_roles)}"},
+                        status_code=403,
+                    )
+
+                # Check @requires_group
+                required_groups = getattr(endpoint, PICO_REQUIRED_GROUPS, None) if endpoint else None
+                if required_groups and not set(claims.groups).intersection(required_groups):
+                    return JSONResponse(
+                        {"detail": f"Requires one of groups: {sorted(required_groups)}"},
                         status_code=403,
                     )
 

@@ -41,6 +41,20 @@ roles = SecurityContext.get_roles()  # e.g. ["admin", "editor"]
 SecurityContext.require_role("admin", "superuser")
 ```
 
+### Check and Require Groups
+
+```python
+# Get all groups
+groups = SecurityContext.get_groups()  # e.g. ("engineering", "platform")
+
+# Boolean check
+if SecurityContext.has_group("engineering"):
+    # ...
+
+# Assert group membership (raises InsufficientPermissionsError)
+SecurityContext.require_group("engineering", "platform")
+```
+
 ---
 
 ## TokenClaims Fields
@@ -54,6 +68,7 @@ SecurityContext.require_role("admin", "superuser")
 | `role` | `str` | Primary role claim from the token |
 | `org_id` | `str` | Organisation identifier |
 | `jti` | `str` | Unique token identifier (JWT ID) |
+| `groups` | `tuple[str, ...]` | Group IDs from the JWT (default `()`) |
 
 ```python
 claims = SecurityContext.require()
@@ -130,5 +145,8 @@ You should **never** need to call `set()` or `clear()` yourself. These are inter
 | `get_roles()` | `list[str]` | -- | Resolved roles (copy) |
 | `has_role(role)` | `bool` | -- | Check single role |
 | `require_role(*roles)` | `None` | `InsufficientPermissionsError` | Assert at least one role |
+| `get_groups()` | `tuple[str, ...]` | -- | Group IDs for current request |
+| `has_group(group_id)` | `bool` | -- | Check single group membership |
+| `require_group(*group_ids)` | `None` | `InsufficientPermissionsError` | Assert at least one group |
 | `set(claims, roles)` | `None` | -- | Internal: set by middleware |
 | `clear()` | `None` | -- | Internal: cleared by middleware |

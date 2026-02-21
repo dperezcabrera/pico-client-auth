@@ -17,8 +17,8 @@ def _clean_context():
     SecurityContext.clear()
 
 
-def _make_claims(**overrides):
-    defaults = dict(sub="u1", email="a@b.com", role="admin", org_id="o1", jti="j1")
+def _make_claims(groups=(), **overrides):
+    defaults = dict(sub="u1", email="a@b.com", role="admin", org_id="o1", jti="j1", groups=groups)
     defaults.update(overrides)
     return TokenClaims(**defaults)
 
@@ -77,6 +77,37 @@ class TestRoles:
         SecurityContext.set(_make_claims(), ["viewer"])
         with pytest.raises(InsufficientPermissionsError):
             SecurityContext.require_role("admin", "editor")
+
+
+class TestGroups:
+    def test_get_groups(self):
+        SecurityContext.set(_make_claims(groups=("g1", "g2")), [])
+        assert SecurityContext.get_groups() == ("g1", "g2")
+
+    def test_get_groups_empty_by_default(self):
+        assert SecurityContext.get_groups() == ()
+
+    def test_has_group_true(self):
+        SecurityContext.set(_make_claims(groups=("g1",)), [])
+        assert SecurityContext.has_group("g1") is True
+
+    def test_has_group_false(self):
+        SecurityContext.set(_make_claims(groups=("g1",)), [])
+        assert SecurityContext.has_group("g2") is False
+
+    def test_require_group_passes(self):
+        SecurityContext.set(_make_claims(groups=("g1", "g2")), [])
+        SecurityContext.require_group("g2")  # should not raise
+
+    def test_require_group_raises(self):
+        SecurityContext.set(_make_claims(groups=("g1",)), [])
+        with pytest.raises(InsufficientPermissionsError):
+            SecurityContext.require_group("g2", "g3")
+
+    def test_clear_resets_groups(self):
+        SecurityContext.set(_make_claims(groups=("g1",)), [])
+        SecurityContext.clear()
+        assert SecurityContext.get_groups() == ()
 
 
 class TestContextVarIsolation:

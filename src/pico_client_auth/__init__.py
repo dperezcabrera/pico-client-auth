@@ -15,7 +15,7 @@ Public API:
 """
 
 from .config import AuthClientSettings
-from .decorators import allow_anonymous, requires_role
+from .decorators import allow_anonymous, requires_group, requires_role
 from .errors import (
     AuthClientError,
     AuthConfigurationError,
@@ -32,6 +32,7 @@ __all__ = [
     "SecurityContext",
     "TokenClaims",
     "allow_anonymous",
+    "requires_group",
     "requires_role",
     "RoleResolver",
     "AuthClientSettings",

@@ -84,6 +84,7 @@ def make_token(rsa_private_pem):
         expires_delta: timedelta | None = None,
         extra_claims: dict | None = None,
         kid: str = "test-key-1",
+        groups: list[str] | None = None,
     ) -> str:
         now = datetime.now(UTC)
         exp = now + (expires_delta if expires_delta is not None else timedelta(hours=1))
@@ -97,6 +98,7 @@ def make_token(rsa_private_pem):
             "aud": audience,
             "iat": int(now.timestamp()),
             "exp": int(exp.timestamp()),
+            "groups": groups or [],
         }
         if extra_claims:
             payload.update(extra_claims)

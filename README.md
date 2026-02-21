@@ -34,7 +34,8 @@
 
 - Auth by default on all routes
 - `@allow_anonymous` to opt out specific endpoints
-- `@requires_role("admin")` for declarative authorization
+- `@requires_role("admin")` for declarative role-based authorization
+- `@requires_group("team-id")` for group-based access control
 - `SecurityContext` accessible from controllers, services, and any code within a request
 - JWKS fetch with TTL cache and automatic key rotation
 - Extensible `RoleResolver` protocol
@@ -62,7 +63,7 @@ auth_client:
 
 ```python
 from pico_fastapi import controller, get
-from pico_client_auth import SecurityContext, allow_anonymous, requires_role
+from pico_client_auth import SecurityContext, allow_anonymous, requires_role, requires_group
 
 @controller(prefix="/api")
 class ApiController:
@@ -129,6 +130,9 @@ claims = SecurityContext.get()         # TokenClaims | None
 roles  = SecurityContext.get_roles()   # list[str]
 SecurityContext.has_role("admin")      # bool
 SecurityContext.require_role("admin")  # raises InsufficientPermissionsError
+groups = SecurityContext.get_groups()  # tuple[str, ...]
+SecurityContext.has_group("team-id")   # bool
+SecurityContext.require_group("team")  # raises InsufficientPermissionsError
 ```
 
 ---
@@ -191,6 +195,7 @@ For full e2e testing with mock JWKS and signed tokens, see the [Testing Guide](h
 - Every request: extract Bearer token → validate JWT via JWKS → resolve roles → populate SecurityContext
 - `@allow_anonymous` endpoints skip validation entirely
 - `@requires_role` endpoints check resolved roles, return 403 if missing
+- `@requires_group` endpoints check group membership, return 403 if missing
 - SecurityContext is cleared in `finally` — no leakage between requests
 
 ---

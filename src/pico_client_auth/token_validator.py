@@ -61,5 +61,6 @@ class TokenValidator:
             role=raw_claims.get("role", ""),
             org_id=raw_claims.get("org_id", ""),
             jti=raw_claims.get("jti", ""),
+            groups=tuple(raw_claims.get("groups", [])),
         )
         return claims, raw_claims

@@ -17,9 +17,9 @@ tox                               # Full matrix (3.11-3.14)
 src/pico_client_auth/
   __init__.py          # Public API exports
   errors.py            # AuthClientError hierarchy
-  models.py            # TokenClaims frozen dataclass
+  models.py            # TokenClaims frozen dataclass (sub, email, role, org_id, jti, groups)
   config.py            # AuthClientSettings (@configured)
-  decorators.py        # @allow_anonymous, @requires_role
+  decorators.py        # @allow_anonymous, @requires_role, @requires_group
   security_context.py  # SecurityContext (ContextVar-backed singleton)
   role_resolver.py     # RoleResolver protocol + DefaultRoleResolver
   jwks_client.py       # JWKSClient - JWKS fetch + cache with TTL
@@ -33,6 +33,7 @@ src/pico_client_auth/
 - **`SecurityContext`**: Static accessor backed by ContextVar. Set by middleware, cleared in finally.
 - **`@allow_anonymous`**: Skip auth for specific endpoints.
 - **`@requires_role("admin")`**: Enforce role-based access after authentication.
+- **`@requires_group("team-id")`**: Enforce group-based access after authentication.
 - **`RoleResolver`**: Protocol for custom role extraction. DefaultRoleResolver uses `claims.role`.
 - **`JWKSClient`**: Fetches JWKS with TTL cache. Force-refreshes on unknown kid (key rotation).
 - **Fail-fast**: AuthConfigurationError raised at startup if issuer/audience missing when enabled.
@@ -50,7 +51,7 @@ src/pico_client_auth/
 - RSA keypair fixture (session-scoped) for JWT signing
 - Mock JWKSClient for token validator tests
 - httpx AsyncClient with ASGITransport for e2e tests
-- Target: >95% coverage
+- 58 tests, >95% coverage
 
 ## Boundaries
 

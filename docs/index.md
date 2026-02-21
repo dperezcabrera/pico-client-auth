@@ -59,6 +59,7 @@ auth_client:
 | **Auth by Default** | All routes require a valid JWT unless explicitly marked `@allow_anonymous` |
 | **SecurityContext** | Access authenticated user claims anywhere in the request lifecycle |
 | **Role-Based Access** | `@requires_role("admin")` decorator for fine-grained authorization |
+| **Group-Based Access** | `@requires_group("team-id")` decorator for group-level authorization |
 | **JWKS Caching** | Automatic key fetch with TTL and key rotation support |
 | **Extensible Roles** | Implement `RoleResolver` protocol to customise role extraction |
 | **Fail-Fast** | Missing configuration raises `AuthConfigurationError` at startup |
@@ -93,18 +94,24 @@ claims = SecurityContext.get()         # Returns None if not authenticated
 roles  = SecurityContext.get_roles()   # Resolved roles list
 SecurityContext.has_role("admin")      # Boolean check
 SecurityContext.require_role("admin")  # Raises InsufficientPermissionsError
+groups = SecurityContext.get_groups()  # Group IDs tuple
+SecurityContext.has_group("team-id")   # Boolean group check
+SecurityContext.require_group("team")  # Raises InsufficientPermissionsError
 ```
 
 ### Decorators
 
 ```python
-from pico_client_auth import allow_anonymous, requires_role
+from pico_client_auth import allow_anonymous, requires_role, requires_group
 
 @allow_anonymous          # Skip token validation for this endpoint
 async def health(): ...
 
 @requires_role("admin")   # 403 if user lacks the role
 async def admin(): ...
+
+@requires_group("eng")    # 403 if user not in group
+async def team(): ...
 ```
 
 ### Custom Role Resolver

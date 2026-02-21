@@ -20,3 +20,4 @@ class TokenClaims:
     role: str
     org_id: str
     jti: str
+    groups: tuple[str, ...] = ()

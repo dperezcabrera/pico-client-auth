@@ -154,3 +154,4 @@ nav:
     - Exceptions: reference/exceptions.md
   - Architecture: architecture.md
   - FAQ: faq.md
+  - Changelog: CHANGELOG.md

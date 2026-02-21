@@ -53,6 +53,17 @@ async def content(self):
     return {"drafts": 5}
 ```
 
+### Group-Based Access
+
+```python
+from pico_client_auth import requires_group
+
+@get("/team")
+@requires_group("engineering", "platform")  # Any of these groups
+async def team_dashboard(self):
+    return {"team": True}
+```
+
 ### Accessing User Claims
 
 ```python
