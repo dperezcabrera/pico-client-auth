@@ -6,6 +6,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## v0.4.1 — Bug Fix & Test Coverage (2026-03-15)
+
+### Fixed
+
+- `TokenValidator._validate_rsa` now uses configured `accepted_algorithms` instead of hardcoded `["RS256"]`, so classical algorithms like RS384/RS512 are respected if configured
+
+### Added
+
+- `test_pqc_jwt_mock.py` — 23 unit tests for `pqc_jwt` with mocked oqs (no liboqs required)
+- `TestPQCDispatchMocked` / `TestAlgorithmNotAccepted` in `test_token_validator.py` — PQC dispatch and algorithm rejection tests
+- PQC code coverage raised from 16% to 98% without liboqs
+
+### Changed
+
+- Added `E402` to per-file test ignores in `pyproject.toml`
+
+---
+
 ## v0.4.0 — Post-Quantum (ML-DSA) Support (2026-03-15)
 
 ### Added

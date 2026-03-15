@@ -76,15 +76,16 @@ class TokenValidator:
         return claims, raw_claims
 
     async def _validate_rsa(self, token: str, headers: dict) -> dict:
-        """Validate an RS256 JWT using python-jose."""
+        """Validate a JWT using python-jose (classical algorithms)."""
         try:
             kid = headers.get("kid", "")
             key = await self._jwks_client.get_key(kid)
+            jose_algorithms = [a for a in self._settings.accepted_algorithms if a not in _PQC_ALGORITHMS]
 
             return jwt.decode(
                 token,
                 key,
-                algorithms=["RS256"],
+                algorithms=jose_algorithms,
                 audience=self._settings.audience,
                 issuer=self._settings.issuer,
             )
