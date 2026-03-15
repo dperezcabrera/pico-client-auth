@@ -1,7 +1,10 @@
 """Tests for TokenValidator."""
 
+import base64
+import json
+import time
 from datetime import timedelta
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -188,3 +191,107 @@ class TestPQCDispatch:
         claims, raw = await validator.validate(token)
         assert claims.sub == "user-123"
         assert raw["iss"] == "https://auth.example.com"
+
+
+def _b64url_encode(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
+
+
+def _make_pqc_token_raw(alg="ML-DSA-65", kid="pqc-key-65", **payload_overrides) -> str:
+    header = {"alg": alg, "typ": "JWT", "kid": kid}
+    payload = {
+        "sub": "user-123",
+        "email": "user@example.com",
+        "role": "admin",
+        "org_id": "org-1",
+        "jti": "token-abc",
+        "iss": "https://auth.example.com",
+        "aud": "my-api",
+        "iat": int(time.time()),
+        "exp": int(time.time()) + 3600,
+        "groups": [],
+    }
+    payload.update(payload_overrides)
+    h = _b64url_encode(json.dumps(header, separators=(",", ":")).encode())
+    p = _b64url_encode(json.dumps(payload, separators=(",", ":")).encode())
+    s = _b64url_encode(b"fake-signature")
+    return f"{h}.{p}.{s}"
+
+
+def _pqc_settings(**overrides):
+    defaults = dict(
+        enabled=True,
+        issuer="https://auth.example.com",
+        audience="my-api",
+        jwks_ttl_seconds=300,
+        jwks_endpoint="https://auth.example.com/api/v1/auth/jwks",
+        accepted_algorithms=("RS256", "ML-DSA-65", "ML-DSA-87"),
+    )
+    defaults.update(overrides)
+    return AuthClientSettings(**defaults)
+
+
+class TestPQCDispatchMocked:
+    """PQC dispatch tests using mocked oqs (no liboqs required)."""
+
+    @pytest.mark.asyncio
+    async def test_pqc_valid_token(self):
+        mock_verifier = MagicMock()
+        mock_verifier.verify.return_value = True
+        mock_oqs = MagicMock()
+        mock_oqs.Signature.return_value = mock_verifier
+
+        pub_bytes = b"fake-public-key"
+        jwk = {"kty": "AKP", "kid": "pqc-key-65", "alg": "ML-DSA-65", "pub": _b64url_encode(pub_bytes)}
+        mock_jwks = AsyncMock(spec=JWKSClient)
+        mock_jwks.get_key = AsyncMock(return_value=jwk)
+
+        token = _make_pqc_token_raw()
+        validator = TokenValidator(settings=_pqc_settings(), jwks_client=mock_jwks)
+
+        with patch.dict("sys.modules", {"oqs": mock_oqs}):
+            claims, raw = await validator.validate(token)
+            assert claims.sub == "user-123"
+            assert claims.email == "user@example.com"
+
+    @pytest.mark.asyncio
+    async def test_pqc_missing_pub_field(self):
+        jwk = {"kty": "AKP", "kid": "pqc-key-65", "alg": "ML-DSA-65"}
+        mock_jwks = AsyncMock(spec=JWKSClient)
+        mock_jwks.get_key = AsyncMock(return_value=jwk)
+
+        token = _make_pqc_token_raw()
+        validator = TokenValidator(settings=_pqc_settings(), jwks_client=mock_jwks)
+
+        with pytest.raises(TokenInvalidError, match="pub"):
+            await validator.validate(token)
+
+    @pytest.mark.asyncio
+    async def test_pqc_unknown_kid(self):
+        mock_jwks = AsyncMock(spec=JWKSClient)
+        mock_jwks.get_key = AsyncMock(side_effect=KeyError("unknown-kid"))
+
+        token = _make_pqc_token_raw()
+        validator = TokenValidator(settings=_pqc_settings(), jwks_client=mock_jwks)
+
+        with pytest.raises(TokenInvalidError, match="Invalid token"):
+            await validator.validate(token)
+
+    @pytest.mark.asyncio
+    async def test_pqc_mldsa87_dispatches(self):
+        mock_verifier = MagicMock()
+        mock_verifier.verify.return_value = True
+        mock_oqs = MagicMock()
+        mock_oqs.Signature.return_value = mock_verifier
+
+        pub_bytes = b"fake-public-key-87"
+        jwk = {"kty": "AKP", "kid": "pqc-key-87", "alg": "ML-DSA-87", "pub": _b64url_encode(pub_bytes)}
+        mock_jwks = AsyncMock(spec=JWKSClient)
+        mock_jwks.get_key = AsyncMock(return_value=jwk)
+
+        token = _make_pqc_token_raw(alg="ML-DSA-87", kid="pqc-key-87")
+        validator = TokenValidator(settings=_pqc_settings(), jwks_client=mock_jwks)
+
+        with patch.dict("sys.modules", {"oqs": mock_oqs}):
+            claims, raw = await validator.validate(token)
+            assert claims.sub == "user-123"

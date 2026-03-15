@@ -27,8 +27,7 @@ def _import_oqs():
         import oqs
     except ImportError as exc:
         raise AuthConfigurationError(
-            "liboqs-python is required for ML-DSA verification. "
-            "Install it with: pip install pico-client-auth[pqc]"
+            "liboqs-python is required for ML-DSA verification. Install it with: pip install pico-client-auth[pqc]"
         ) from exc
     return oqs
 
