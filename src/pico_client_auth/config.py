@@ -26,3 +26,4 @@ class AuthClientSettings:
     audience: str = ""
     jwks_ttl_seconds: int = 300
     jwks_endpoint: str = ""
+    accepted_algorithms: tuple[str, ...] = ("RS256",)

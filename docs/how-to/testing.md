@@ -231,6 +231,49 @@ def test_set_and_get():
 
 ---
 
+## Testing Post-Quantum (ML-DSA) Tokens
+
+PQC test fixtures are available in conftest.py and skip automatically when liboqs is not installed:
+
+```python
+import pytest
+
+def test_mldsa65_token(mldsa65_keypair, mldsa65_jwk_dict, make_pqc_token):
+    oqs = pytest.importorskip("oqs")
+    public_key, secret_key = mldsa65_keypair
+
+    token = make_pqc_token(secret_key, algorithm="ML-DSA-65", kid="pqc-key-65")
+
+    # Use with TokenValidator
+    mock_jwks = AsyncMock(spec=JWKSClient)
+    mock_jwks.get_key = AsyncMock(return_value=mldsa65_jwk_dict)
+
+    settings = AuthClientSettings(
+        enabled=True,
+        issuer="https://auth.example.com",
+        audience="my-api",
+        jwks_endpoint="https://auth.example.com/jwks",
+        accepted_algorithms=("RS256", "ML-DSA-65"),
+    )
+    validator = TokenValidator(settings=settings, jwks_client=mock_jwks)
+    claims, raw = await validator.validate(token)
+    assert claims.sub == "user-123"
+```
+
+Available PQC fixtures:
+
+| Fixture | Description |
+|---------|-------------|
+| `mldsa65_keypair` | `(public_key, secret_key)` for ML-DSA-65 |
+| `mldsa87_keypair` | `(public_key, secret_key)` for ML-DSA-87 |
+| `mldsa65_jwk_dict` | AKP JWK dict for the ML-DSA-65 key |
+| `mldsa87_jwk_dict` | AKP JWK dict for the ML-DSA-87 key |
+| `make_pqc_token` | Factory: `make_pqc_token(secret_key, algorithm="ML-DSA-65", ...)` |
+
+Run PQC tests in Docker: `make pqc-test`
+
+---
+
 ## Common Testing Pitfalls
 
 | Problem | Cause | Fix |
@@ -239,3 +282,4 @@ def test_set_and_get():
 | SecurityContext leaks between tests | Missing `clear()` | Add `SecurityContext.clear()` in a fixture with `autouse=True` |
 | Expired token errors | Test token uses real time | Ensure `exp` is set far in the future |
 | Wrong issuer/audience | Settings don't match `make_token` | Align `issuer`/`audience` in both |
+| PQC tests not running | liboqs not installed | Use `make pqc-test` or `tox -e pqc-py312` with liboqs |

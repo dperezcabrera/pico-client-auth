@@ -19,6 +19,7 @@ def settings():
         audience="my-api",
         jwks_ttl_seconds=300,
         jwks_endpoint="https://auth.example.com/api/v1/auth/jwks",
+        accepted_algorithms=("RS256",),
     )
 
 
@@ -113,3 +114,77 @@ class TestWrongIssuer:
         token = make_token()
         with pytest.raises(TokenInvalidError):
             await validator.validate(token)
+
+
+class TestAlgorithmNotAccepted:
+    @pytest.mark.asyncio
+    async def test_rejects_algorithm_not_in_accepted_list(self, mock_jwks_client, make_token):
+        """RS256 token rejected when only ML-DSA-65 is accepted."""
+        settings = AuthClientSettings(
+            enabled=True,
+            issuer="https://auth.example.com",
+            audience="my-api",
+            jwks_ttl_seconds=300,
+            jwks_endpoint="https://auth.example.com/api/v1/auth/jwks",
+            accepted_algorithms=("ML-DSA-65",),
+        )
+        validator = TokenValidator(settings=settings, jwks_client=mock_jwks_client)
+        token = make_token()
+        with pytest.raises(TokenInvalidError, match="not accepted"):
+            await validator.validate(token)
+
+
+class TestPQCDispatch:
+    @pytest.mark.asyncio
+    async def test_mldsa65_dispatches_to_pqc(self, mldsa65_keypair, mldsa65_jwk_dict, make_pqc_token):
+        """ML-DSA-65 token is routed through pqc_jwt validation."""
+        oqs = pytest.importorskip("oqs")
+        _, secret_key = mldsa65_keypair
+        token = make_pqc_token(secret_key, algorithm="ML-DSA-65", kid="pqc-key-65")
+
+        mock_jwks = AsyncMock(spec=JWKSClient)
+        mock_jwks.get_key = AsyncMock(return_value=mldsa65_jwk_dict)
+
+        settings = AuthClientSettings(
+            enabled=True,
+            issuer="https://auth.example.com",
+            audience="my-api",
+            jwks_ttl_seconds=300,
+            jwks_endpoint="https://auth.example.com/api/v1/auth/jwks",
+            accepted_algorithms=("RS256", "ML-DSA-65"),
+        )
+        validator = TokenValidator(settings=settings, jwks_client=mock_jwks)
+        claims, raw = await validator.validate(token)
+        assert claims.sub == "user-123"
+        assert claims.email == "user@example.com"
+
+    @pytest.mark.asyncio
+    async def test_mldsa87_dispatches_to_pqc(self, mldsa87_keypair, mldsa87_jwk_dict, make_pqc_token):
+        """ML-DSA-87 token is routed through pqc_jwt validation."""
+        oqs = pytest.importorskip("oqs")
+        _, secret_key = mldsa87_keypair
+        token = make_pqc_token(secret_key, algorithm="ML-DSA-87", kid="pqc-key-87")
+
+        mock_jwks = AsyncMock(spec=JWKSClient)
+        mock_jwks.get_key = AsyncMock(return_value=mldsa87_jwk_dict)
+
+        settings = AuthClientSettings(
+            enabled=True,
+            issuer="https://auth.example.com",
+            audience="my-api",
+            jwks_ttl_seconds=300,
+            jwks_endpoint="https://auth.example.com/api/v1/auth/jwks",
+            accepted_algorithms=("RS256", "ML-DSA-87"),
+        )
+        validator = TokenValidator(settings=settings, jwks_client=mock_jwks)
+        claims, raw = await validator.validate(token)
+        assert claims.sub == "user-123"
+
+    @pytest.mark.asyncio
+    async def test_rs256_still_uses_jose(self, settings, mock_jwks_client, make_token):
+        """RS256 token continues to use the python-jose path."""
+        validator = TokenValidator(settings=settings, jwks_client=mock_jwks_client)
+        token = make_token()
+        claims, raw = await validator.validate(token)
+        assert claims.sub == "user-123"
+        assert raw["iss"] == "https://auth.example.com"

@@ -1,4 +1,4 @@
-.PHONY: $(VERSIONS) build-% test-% test-all
+.PHONY: $(VERSIONS) build-% test-% test-all pqc-build pqc-test
 
 VERSIONS = 3.11 3.12 3.13 3.14
 
@@ -12,3 +12,9 @@ test-%: build-%
 
 test-all: $(addprefix test-, $(VERSIONS))
 	@echo "All versions done"
+
+pqc-build:
+	docker build -t pico_client_auth-pqc-test:latest --no-cache -f Dockerfile.pqc-test .
+
+pqc-test: pqc-build
+	docker run --rm pico_client_auth-pqc-test:latest

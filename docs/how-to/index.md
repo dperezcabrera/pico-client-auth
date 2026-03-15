@@ -9,6 +9,7 @@ Practical step-by-step guides for common tasks with pico-client-auth.
 | [Custom Role Resolver](./custom-roles.md) | Extract roles from a `roles` array or external service |
 | [Public Endpoints](./allow-anonymous.md) | Mark endpoints as publicly accessible |
 | [Testing Auth](./testing.md) | Test controllers with mock tokens and role overrides |
+| [Post-Quantum (ML-DSA)](./pqc.md) | Enable ML-DSA-65/87 post-quantum JWT verification |
 
 ## Quick Reference
 

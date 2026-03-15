@@ -25,6 +25,7 @@ def _build_settings(**overrides):
         audience="my-api",
         jwks_ttl_seconds=300,
         jwks_endpoint="https://auth.example.com/api/v1/auth/jwks",
+        accepted_algorithms=("RS256",),
     )
     defaults.update(overrides)
     return AuthClientSettings(**defaults)
@@ -176,6 +177,67 @@ class TestExpiredToken:
         resp = await client.get("/protected", headers={"Authorization": f"Bearer {token}"})
         assert resp.status_code == 401
         assert "expired" in resp.json()["detail"].lower()
+
+
+class TestPQCEndToEnd:
+    @pytest.mark.asyncio
+    async def test_mldsa65_token_through_middleware(self, mldsa65_keypair, mldsa65_jwk_dict, make_pqc_token):
+        """ML-DSA-65 token works end-to-end through the middleware."""
+        oqs = pytest.importorskip("oqs")
+        _, secret_key = mldsa65_keypair
+        token = make_pqc_token(secret_key, algorithm="ML-DSA-65", kid="pqc-key-65")
+
+        settings = _build_settings(accepted_algorithms=("RS256", "ML-DSA-65"))
+        app = FastAPI()
+
+        mock_jwks = AsyncMock(spec=JWKSClient)
+        mock_jwks.get_key = AsyncMock(return_value=mldsa65_jwk_dict)
+
+        validator = TokenValidator(settings=settings, jwks_client=mock_jwks)
+        resolver = DefaultRoleResolver()
+        configurer = AuthFastapiConfigurer(settings=settings, token_validator=validator, role_resolver=resolver)
+        configurer.configure_app(app)
+
+        @app.get("/protected")
+        async def protected(request: Request):
+            claims = SecurityContext.get()
+            return {"sub": claims.sub, "email": claims.email}
+
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            resp = await client.get("/protected", headers={"Authorization": f"Bearer {token}"})
+            assert resp.status_code == 200
+            data = resp.json()
+            assert data["sub"] == "user-123"
+            assert data["email"] == "user@example.com"
+
+    @pytest.mark.asyncio
+    async def test_mldsa_token_rejected_when_not_accepted(self, mldsa65_keypair, mldsa65_jwk_dict, make_pqc_token):
+        """ML-DSA token is rejected when only RS256 is in accepted_algorithms."""
+        oqs = pytest.importorskip("oqs")
+        _, secret_key = mldsa65_keypair
+        token = make_pqc_token(secret_key, algorithm="ML-DSA-65", kid="pqc-key-65")
+
+        settings = _build_settings(accepted_algorithms=("RS256",))
+        app = FastAPI()
+
+        mock_jwks = AsyncMock(spec=JWKSClient)
+        mock_jwks.get_key = AsyncMock(return_value=mldsa65_jwk_dict)
+
+        validator = TokenValidator(settings=settings, jwks_client=mock_jwks)
+        resolver = DefaultRoleResolver()
+        configurer = AuthFastapiConfigurer(settings=settings, token_validator=validator, role_resolver=resolver)
+        configurer.configure_app(app)
+
+        @app.get("/protected")
+        async def protected(request: Request):
+            return {"ok": True}
+
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            resp = await client.get("/protected", headers={"Authorization": f"Bearer {token}"})
+            assert resp.status_code == 401
+            assert "not accepted" in resp.json()["detail"]
 
 
 class TestFailFastConfiguration:

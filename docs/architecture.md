@@ -210,6 +210,7 @@ All authentication/authorization errors return JSON with a consistent schema:
 - Keep auth logic **out of controllers** (declarative decorators instead)
 - Support **JWKS-based key rotation** without application restarts
 - Enable **testable security** via `RoleResolver` override and container overrides
+- **Post-quantum readiness** via ML-DSA-65/87 signature verification
 
 It does *not* attempt to:
 
@@ -217,3 +218,23 @@ It does *not* attempt to:
 - Manage user sessions or cookies
 - Replace a full identity provider
 - Handle API key authentication
+
+---
+
+## 9. Post-Quantum Algorithm Dispatch
+
+`TokenValidator` reads the JWT `alg` header and dispatches to the appropriate verification path:
+
+```mermaid
+flowchart TD
+    T[Incoming JWT] --> H[Read alg header]
+    H --> C{alg in accepted_algorithms?}
+    C -->|No| R[Reject — TokenInvalidError]
+    C -->|Yes| D{Algorithm type}
+    D -->|RS256| J[python-jose path]
+    D -->|ML-DSA-65 / ML-DSA-87| P[pqc_jwt path via liboqs]
+    J --> V[Validated claims]
+    P --> V
+```
+
+ML-DSA tokens use the JOSE `AKP` key type with base64url-encoded raw public keys. The `pqc_jwt` module lazy-imports `oqs` and raises `AuthConfigurationError` if liboqs is not installed.

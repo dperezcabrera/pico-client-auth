@@ -6,6 +6,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## v0.4.0 — Post-Quantum (ML-DSA) Support (2026-03-15)
+
+### Added
+
+- ML-DSA-65 and ML-DSA-87 post-quantum JWT signature verification via `liboqs-python`
+- `pqc_jwt` module — custom JWT decode+verify for ML-DSA algorithms (python-jose does not support PQC)
+- `accepted_algorithms` field in `AuthClientSettings` — restrict which JWT signing algorithms are accepted (default: `("RS256",)`)
+- Algorithm dispatch in `TokenValidator` — routes ML-DSA tokens to `pqc_jwt`, RS256 tokens to python-jose
+- `pqc` optional dependency extra (`pip install pico-client-auth[pqc]`)
+- `Dockerfile.pqc-test` — Docker container with liboqs C library for PQC testing
+- `pqc-build` / `pqc-test` Makefile targets
+- `pqc-py{311..314}` tox test environments
+- PQC test fixtures: `mldsa65_keypair`, `mldsa87_keypair`, `mldsa_jwk_dict`, `make_pqc_token`
+- PQC tests gracefully skip when liboqs is not installed (`pytest.importorskip`)
+
+---
+
 ## v0.3.0 — Groups Support (2026-02-21)
 
 ### Added

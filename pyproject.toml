@@ -46,6 +46,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+pqc = ["liboqs-python >= 0.11.0"]
 
 [project.urls]
 Homepage = "https://github.com/dperezcabrera/pico-client-auth"

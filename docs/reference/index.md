@@ -139,6 +139,7 @@ class AuthClientSettings:
     audience: str = ""
     jwks_ttl_seconds: int = 300
     jwks_endpoint: str = ""
+    accepted_algorithms: tuple[str, ...] = ("RS256",)
 ```
 
 | Field | Type | Default | Description |
@@ -148,6 +149,7 @@ class AuthClientSettings:
 | `audience` | `str` | `""` | Expected JWT audience |
 | `jwks_ttl_seconds` | `int` | `300` | JWKS cache TTL (seconds) |
 | `jwks_endpoint` | `str` | `""` | JWKS URL (default: `{issuer}/api/v1/auth/jwks`) |
+| `accepted_algorithms` | `tuple[str, ...]` | `("RS256",)` | Accepted JWT signing algorithms (e.g. `RS256`, `ML-DSA-65`, `ML-DSA-87`) |
 
 ---
 

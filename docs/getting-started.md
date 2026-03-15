@@ -12,6 +12,9 @@ This guide walks you through adding JWT authentication to a pico-fastapi applica
 
 ```bash
 pip install pico-client-auth
+
+# With post-quantum (ML-DSA) support
+pip install pico-client-auth[pqc]
 ```
 
 This installs:
@@ -21,6 +24,7 @@ This installs:
 - `pico-ioc` - Core DI container (dependency)
 - `python-jose` - JWT decoding
 - `httpx` - JWKS HTTP client
+- `liboqs-python` - ML-DSA signature verification (only with `[pqc]` extra)
 
 ---
 
@@ -181,6 +185,7 @@ Request Flow:
 | `auth_client.audience` | `""` | Expected JWT audience (`aud` claim) |
 | `auth_client.jwks_ttl_seconds` | `300` | JWKS cache TTL in seconds |
 | `auth_client.jwks_endpoint` | `""` | JWKS URL (default: `{issuer}/api/v1/auth/jwks`) |
+| `auth_client.accepted_algorithms` | `["RS256"]` | Accepted JWT signing algorithms |
 
 ---
 

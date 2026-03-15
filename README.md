@@ -41,6 +41,7 @@
 - Extensible `RoleResolver` protocol
 - Fail-fast startup if issuer/audience are missing
 - Auto-discovered via `pico_boot.modules` entry point
+- **Post-quantum ready**: ML-DSA-65 / ML-DSA-87 signature verification (optional `pqc` extra)
 
 ---
 
@@ -48,6 +49,9 @@
 
 ```bash
 pip install pico-client-auth
+
+# With post-quantum (ML-DSA) support
+pip install pico-client-auth[pqc]
 ```
 
 ---
@@ -162,6 +166,7 @@ class MyRoleResolver:
 | `auth_client.audience` | `""` | Expected JWT audience (`aud` claim) |
 | `auth_client.jwks_ttl_seconds` | `300` | JWKS cache TTL in seconds |
 | `auth_client.jwks_endpoint` | `""` | JWKS URL (default: `{issuer}/api/v1/auth/jwks`) |
+| `auth_client.accepted_algorithms` | `["RS256"]` | List of accepted JWT signing algorithms |
 
 ---
 
@@ -189,10 +194,33 @@ For full e2e testing with mock JWKS and signed tokens, see the [Testing Guide](h
 
 ---
 
+## Post-Quantum (ML-DSA) Support
+
+pico-client-auth supports ML-DSA-65 (NIST Level 3) and ML-DSA-87 (NIST Level 5) post-quantum signature verification via the optional `pqc` extra.
+
+```yaml
+auth_client:
+  issuer: https://auth.example.com
+  audience: my-api
+  accepted_algorithms:
+    - RS256
+    - ML-DSA-65
+```
+
+ML-DSA tokens use the [draft-ietf-cose-dilithium](https://datatracker.ietf.org/doc/draft-ietf-cose-dilithium/) JOSE standard:
+- **kty**: `"AKP"` (Algorithm Key Pair)
+- **alg**: `"ML-DSA-65"` or `"ML-DSA-87"`
+- **pub**: base64url-encoded raw public key
+
+Requires `liboqs-python` (installed automatically with `pip install pico-client-auth[pqc]`). When liboqs is not installed, ML-DSA tokens are rejected with `AuthConfigurationError`.
+
+---
+
 ## How It Works
 
 - `AuthFastapiConfigurer` (priority=10) registers as an inner middleware
 - Every request: extract Bearer token → validate JWT via JWKS → resolve roles → populate SecurityContext
+- Algorithm dispatch: RS256 tokens use python-jose, ML-DSA tokens use liboqs
 - `@allow_anonymous` endpoints skip validation entirely
 - `@requires_role` endpoints check resolved roles, return 403 if missing
 - `@requires_group` endpoints check group membership, return 403 if missing

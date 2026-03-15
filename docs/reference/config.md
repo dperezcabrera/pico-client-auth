@@ -16,6 +16,7 @@ Fields:
 - `audience: str` — Expected JWT audience (`aud` claim). Required when enabled.
 - `jwks_ttl_seconds: int` — How long to cache the JWKS key set. Default: `300`.
 - `jwks_endpoint: str` — URL to fetch JWKS from. Default: `{issuer}/api/v1/auth/jwks`.
+- `accepted_algorithms: tuple[str, ...]` — JWT signing algorithms to accept. Default: `("RS256",)`. Add `"ML-DSA-65"` or `"ML-DSA-87"` for post-quantum support.
 
 How to use:
 - Provide a configuration source with an `auth_client` prefix when initializing the container.
@@ -71,6 +72,22 @@ auth_client:
 ```
 
 When disabled, no middleware is registered. All routes are accessible without tokens.
+
+## Accepted Algorithms
+
+By default only RS256 is accepted. To enable post-quantum ML-DSA verification, add the algorithms to `accepted_algorithms`:
+
+```yaml
+auth_client:
+  issuer: https://auth.example.com
+  audience: my-api
+  accepted_algorithms:
+    - RS256
+    - ML-DSA-65
+    - ML-DSA-87
+```
+
+Tokens with algorithms not in this list are rejected with `TokenInvalidError`. ML-DSA requires the `pqc` extra (`pip install pico-client-auth[pqc]`).
 
 ## Custom JWKS Endpoint
 
