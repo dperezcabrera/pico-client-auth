@@ -55,9 +55,7 @@ class RevocationCache:
         )
         headers = {}
         if self._settings.revocation_bearer:
-            headers["Authorization"] = (
-                f"Bearer {self._settings.revocation_bearer}"
-            )
+            headers["Authorization"] = f"Bearer {self._settings.revocation_bearer}"
         try:
             async with httpx.AsyncClient(timeout=5.0) as client:
                 r = await client.get(
@@ -66,21 +64,20 @@ class RevocationCache:
                 )
                 r.raise_for_status()
                 data = r.json()
-        except Exception as exc:   # noqa: BLE001
+        except Exception as exc:  # noqa: BLE001
             # Fail-open on transient fetch errors — using a stale
             # denylist for a few extra seconds is preferable to
             # rejecting every legit request because the auth
             # server hiccupped. The operator can still rotate
             # JWKS for a hard cutoff.
             logger.warning(
-                "revocation cache fetch failed (using stale): %s", exc,
+                "revocation cache fetch failed (using stale): %s",
+                exc,
             )
             self._fetched_at = time.monotonic()
             return
         items = data.get("items", []) or []
-        self._revoked = {
-            str(it.get("jti", "")) for it in items if it.get("jti")
-        }
+        self._revoked = {str(it.get("jti", "")) for it in items if it.get("jti")}
         self._fetched_at = time.monotonic()
         logger.debug(
             "revocation cache refreshed: %d entries",

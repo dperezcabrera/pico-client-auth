@@ -80,7 +80,8 @@ class AgentClaims:
 
 
 _agent_var: ContextVar[Optional[AgentClaims]] = ContextVar(
-    "_pico_auth_agent", default=None,
+    "_pico_auth_agent",
+    default=None,
 )
 
 

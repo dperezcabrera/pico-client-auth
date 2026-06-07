@@ -103,7 +103,8 @@ class TestAgentContext:
 
     def test_set_and_read(self):
         agent = AgentClaims(
-            sub="agent-1", scopes=("a:b", "c:*"),
+            sub="agent-1",
+            scopes=("a:b", "c:*"),
             user_id="user-1",
         )
         AgentContext.set(agent)
@@ -167,7 +168,9 @@ def _build_app(settings, jwk_dict):
     validator = TokenValidator(settings=settings, jwks_client=mock_jwks, revocation_cache=_no_revocations())
     resolver = DefaultRoleResolver()
     configurer = AuthFastapiConfigurer(
-        settings=settings, token_validator=validator, role_resolver=resolver,
+        settings=settings,
+        token_validator=validator,
+        role_resolver=resolver,
     )
     configurer.configure_app(app)
 
@@ -309,7 +312,9 @@ class TestScopedEndpointHappy:
 
     @pytest.mark.asyncio
     async def test_specific_scope_satisfies_wildcard_endpoint(
-        self, client, make_token,
+        self,
+        client,
+        make_token,
     ):
         # Endpoint asks for "treasury:*" — agent has the more specific
         # "treasury:write:budget:opex". The endpoint required scope is
@@ -356,7 +361,9 @@ class TestRoleOnlyEndpoint:
 
     @pytest.mark.asyncio
     async def test_with_agent_header_populates_context(
-        self, client, make_token,
+        self,
+        client,
+        make_token,
     ):
         svc = make_token(role="admin")
         agent = make_token(sub="agent-1", extra_claims={"scopes": ["x:y"]})
@@ -390,7 +397,9 @@ class TestAnonymousEndpoint:
 class TestContextCleanup:
     @pytest.mark.asyncio
     async def test_agent_context_does_not_leak_between_requests(
-        self, client, make_token,
+        self,
+        client,
+        make_token,
     ):
         # Request 1: with agent token.
         svc = make_token(role="admin")
