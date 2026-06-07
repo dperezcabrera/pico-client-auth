@@ -207,3 +207,6 @@ marimo/_lsp/
 __marimo__/
 manage.sh
 _version.py
+
+# Release notes are local artifacts (used for GitHub Releases), not tracked
+releases/

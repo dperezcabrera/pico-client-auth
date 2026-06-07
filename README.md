@@ -36,8 +36,10 @@
 - `@allow_anonymous` to opt out specific endpoints
 - `@requires_role("admin")` for declarative role-based authorization
 - `@requires_group("team-id")` for group-based access control
+- `@requires_scope("treasury:*")` for **agent-identity** authorization (dual-token, see below)
 - `SecurityContext` accessible from controllers, services, and any code within a request
 - JWKS fetch with TTL cache and automatic key rotation
+- Optional **`jti` revocation denylist** with bounded propagation (opt-in)
 - Extensible `RoleResolver` protocol
 - Fail-fast startup if issuer/audience are missing
 - Auto-discovered via `pico_boot.modules` entry point
@@ -141,6 +143,32 @@ SecurityContext.require_group("team")  # raises InsufficientPermissionsError
 
 ---
 
+## Agent Identity & Scopes *(v0.4.2+)*
+
+A request can carry **two** tokens. `Authorization: Bearer <service-token>` proves *which service* is calling (→ `SecurityContext`). `X-Agent-Authorization: Bearer <agent-token>` proves *which LLM agent is acting, on behalf of which user, with which scopes* (→ `AgentContext`). Both are validated through the same `TokenValidator`/JWKS.
+
+Gate an endpoint on agent scopes with `@requires_scope` — scope matching is a `:`-segmented glob, so `treasury:*` matches `treasury:write:budget:opex`:
+
+```python
+from pico_client_auth import requires_scope, AgentContext
+
+@app.get("/treasury/payments")
+@requires_role("treasury-service")    # service identity (Authorization)
+@requires_scope("treasury:write:*")   # agent identity (X-Agent-Authorization)
+async def make_payment():
+    agent = AgentContext.get()        # AgentClaims | None
+    return {"agent": agent.sub, "user": agent.user_id, "scopes": agent.scopes}
+```
+
+- An endpoint with `@requires_scope` returns **401** if the agent header is missing and **403** if its scopes don't satisfy the requirement.
+- Endpoints **without** `@requires_scope` ignore the agent header (it's optional; `AgentContext` is still populated if a valid one is present).
+
+### Revocation denylist (opt-in)
+
+Set `revocation_endpoint` to have the validator reject tokens whose `jti` is on the issuer's denylist. The cache is polled every `revocation_ttl_seconds` (default 15s — the worst-case window between an operator revoking and validators rejecting). Empty endpoint (default) = signature-only validation. JWKS rotation remains the instant-kill path.
+
+---
+
 ## Custom Role Resolver
 
 Override how roles are extracted from tokens:
@@ -167,6 +195,9 @@ class MyRoleResolver:
 | `auth_client.jwks_ttl_seconds` | `300` | JWKS cache TTL in seconds |
 | `auth_client.jwks_endpoint` | `""` | JWKS URL (default: `{issuer}/api/v1/auth/jwks`) |
 | `auth_client.accepted_algorithms` | `["RS256"]` | List of accepted JWT signing algorithms |
+| `auth_client.revocation_endpoint` | `""` | `jti` denylist URL to poll. Empty = revocation disabled |
+| `auth_client.revocation_ttl_seconds` | `15` | Poll interval / worst-case revoke→reject window |
+| `auth_client.revocation_bearer` | `""` | Optional bearer token for the revocation endpoint |
 
 ---
 

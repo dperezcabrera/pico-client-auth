@@ -6,6 +6,27 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## v0.4.2 — Agentic Identity & Scope Authorization (2026-06-07)
+
+### Added
+
+- **Agent identity (`X-Agent-Authorization`)** — a request may now carry a *second* JWT alongside the service token. The service token (`Authorization`) says *which service* is calling; the agent token (`X-Agent-Authorization`) says *which LLM agent is acting on behalf of which user, with what scopes and spend limits*. Both are validated through the same `TokenValidator`/JWKS.
+- **`AgentContext` + `AgentClaims`** — request-scoped context (ContextVar-isolated) exposing the agent's `sub`, `scopes`, `user_id`, `spend_limit`, `parent_chain`, and raw claims. Cleared automatically at the end of each request.
+- **`@requires_scope(...)` decorator + scope matching** — endpoint-level authorization against agent scopes, with `:`-segmented glob matching (`treasury:*` matches `treasury:write:budget:opex`). Helpers `scope_matches` / `any_scope_matches` are exported.
+- **`RevocationCache`** — a local cache of the issuer's `jti` denylist. After signature validation, the validator rejects revoked tokens. Polls `revocation_endpoint` every `revocation_ttl_seconds`; **disabled by default** (empty endpoint → signature-only validation, unchanged behavior). JWKS rotation remains the instant-kill path.
+- New config fields: `revocation_endpoint` (default `""`), `revocation_ttl_seconds` (default `15`), `revocation_bearer` (default `""`).
+
+### Changed
+
+- `TokenValidator` now performs a `jti` denylist check after signature verification (no-op unless `revocation_endpoint` is configured).
+- Public API additions to `__init__.py`: `AgentClaims`, `AgentContext`, `requires_scope`, `scope_matches`, `any_scope_matches`.
+
+### Compatibility
+
+- **Backward-compatible.** Endpoints without `@requires_scope` ignore the agent header; with no `revocation_endpoint` configured, validation behaves exactly as in v0.4.1.
+
+---
+
 ## v0.4.1 — Bug Fix & Test Coverage (2026-03-15)
 
 ### Fixed

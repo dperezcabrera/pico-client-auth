@@ -27,3 +27,19 @@ class AuthClientSettings:
     jwks_ttl_seconds: int = 300
     jwks_endpoint: str = ""
     accepted_algorithms: tuple[str, ...] = ("RS256",)
+    # ── Revocation denylist (jti) ────────────────────────────────
+    # Endpoint the validator polls to refresh its local cache of
+    # revoked JWT IDs. Empty disables the check entirely (back to
+    # signature-only validation — safe default for setups that
+    # haven't wired the issuer's revoke endpoint).
+    # ``revocation_ttl_seconds`` is the worst-case window between
+    # an operator clicking Revoke and validators actually
+    # rejecting the token. Lower = snappier, higher = fewer
+    # round-trips. JWKS rotation remains the instant-kill path.
+    revocation_endpoint: str = ""
+    revocation_ttl_seconds: int = 15
+    # If the revocation endpoint requires a Bearer token (the
+    # default — pico-server-auth gates it behind role=service),
+    # the auth-client uses this token for the poll. Empty falls
+    # back to anonymous (works for dev / unauthenticated setups).
+    revocation_bearer: str = ""

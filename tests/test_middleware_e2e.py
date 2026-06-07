@@ -13,9 +13,15 @@ from pico_client_auth.configurer import AuthFastapiConfigurer, _find_endpoint
 from pico_client_auth.decorators import allow_anonymous, requires_group, requires_role
 from pico_client_auth.errors import AuthConfigurationError
 from pico_client_auth.jwks_client import JWKSClient
+from pico_client_auth.revocation_cache import RevocationCache
 from pico_client_auth.role_resolver import DefaultRoleResolver
 from pico_client_auth.security_context import SecurityContext
 from pico_client_auth.token_validator import TokenValidator
+
+
+def _no_revocations() -> RevocationCache:
+    """Disabled revocation cache (no endpoint → is_revoked() always False)."""
+    return RevocationCache(AuthClientSettings())
 
 
 def _build_settings(**overrides):
@@ -38,7 +44,7 @@ def _build_app(settings, jwk_dict):
     mock_jwks = AsyncMock(spec=JWKSClient)
     mock_jwks.get_key = AsyncMock(return_value=jwk_dict)
 
-    validator = TokenValidator(settings=settings, jwks_client=mock_jwks)
+    validator = TokenValidator(settings=settings, jwks_client=mock_jwks, revocation_cache=_no_revocations())
     resolver = DefaultRoleResolver()
     configurer = AuthFastapiConfigurer(settings=settings, token_validator=validator, role_resolver=resolver)
     configurer.configure_app(app)
@@ -193,7 +199,7 @@ class TestPQCEndToEnd:
         mock_jwks = AsyncMock(spec=JWKSClient)
         mock_jwks.get_key = AsyncMock(return_value=mldsa65_jwk_dict)
 
-        validator = TokenValidator(settings=settings, jwks_client=mock_jwks)
+        validator = TokenValidator(settings=settings, jwks_client=mock_jwks, revocation_cache=_no_revocations())
         resolver = DefaultRoleResolver()
         configurer = AuthFastapiConfigurer(settings=settings, token_validator=validator, role_resolver=resolver)
         configurer.configure_app(app)
@@ -224,7 +230,7 @@ class TestPQCEndToEnd:
         mock_jwks = AsyncMock(spec=JWKSClient)
         mock_jwks.get_key = AsyncMock(return_value=mldsa65_jwk_dict)
 
-        validator = TokenValidator(settings=settings, jwks_client=mock_jwks)
+        validator = TokenValidator(settings=settings, jwks_client=mock_jwks, revocation_cache=_no_revocations())
         resolver = DefaultRoleResolver()
         configurer = AuthFastapiConfigurer(settings=settings, token_validator=validator, role_resolver=resolver)
         configurer.configure_app(app)
@@ -244,7 +250,7 @@ class TestFailFastConfiguration:
     def test_missing_issuer_raises(self, jwk_dict):
         settings = _build_settings(issuer="")
         mock_jwks = AsyncMock(spec=JWKSClient)
-        validator = TokenValidator(settings=settings, jwks_client=mock_jwks)
+        validator = TokenValidator(settings=settings, jwks_client=mock_jwks, revocation_cache=_no_revocations())
         resolver = DefaultRoleResolver()
         with pytest.raises(AuthConfigurationError, match="issuer"):
             AuthFastapiConfigurer(settings=settings, token_validator=validator, role_resolver=resolver)
@@ -252,7 +258,7 @@ class TestFailFastConfiguration:
     def test_missing_audience_raises(self, jwk_dict):
         settings = _build_settings(audience="")
         mock_jwks = AsyncMock(spec=JWKSClient)
-        validator = TokenValidator(settings=settings, jwks_client=mock_jwks)
+        validator = TokenValidator(settings=settings, jwks_client=mock_jwks, revocation_cache=_no_revocations())
         resolver = DefaultRoleResolver()
         with pytest.raises(AuthConfigurationError, match="audience"):
             AuthFastapiConfigurer(settings=settings, token_validator=validator, role_resolver=resolver)
@@ -260,7 +266,7 @@ class TestFailFastConfiguration:
     def test_disabled_skips_validation(self, jwk_dict):
         settings = _build_settings(enabled=False, issuer="", audience="")
         mock_jwks = AsyncMock(spec=JWKSClient)
-        validator = TokenValidator(settings=settings, jwks_client=mock_jwks)
+        validator = TokenValidator(settings=settings, jwks_client=mock_jwks, revocation_cache=_no_revocations())
         resolver = DefaultRoleResolver()
         # Should not raise
         configurer = AuthFastapiConfigurer(settings=settings, token_validator=validator, role_resolver=resolver)

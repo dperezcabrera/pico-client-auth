@@ -12,6 +12,7 @@ from .config import AuthClientSettings
 from .errors import TokenExpiredError, TokenInvalidError
 from .jwks_client import JWKSClient
 from .models import TokenClaims
+from .revocation_cache import RevocationCache
 
 logger = logging.getLogger(__name__)
 
@@ -36,9 +37,15 @@ class TokenValidator:
     Supports RS256 and ML-DSA post-quantum algorithms.
     """
 
-    def __init__(self, settings: AuthClientSettings, jwks_client: JWKSClient):
+    def __init__(
+        self,
+        settings: AuthClientSettings,
+        jwks_client: JWKSClient,
+        revocation_cache: RevocationCache,
+    ):
         self._settings = settings
         self._jwks_client = jwks_client
+        self._revocations = revocation_cache
 
     async def validate(self, token: str) -> tuple[TokenClaims, dict]:
         """Validate a JWT token and return structured claims.
@@ -65,12 +72,22 @@ class TokenValidator:
         else:
             raw_claims = await self._validate_rsa(token, headers)
 
+        # Denylist check after signature passes — cheap O(1)
+        # set lookup against the locally-cached jti list.
+        # Disabled when ``revocation_endpoint`` isn't configured
+        # (default for setups that haven't opted in).
+        jti = str(raw_claims.get("jti", ""))
+        if jti and await self._revocations.is_revoked(jti):
+            raise TokenInvalidError(
+                f"Token revoked (jti={jti})",
+            )
+
         claims = TokenClaims(
             sub=raw_claims.get("sub", ""),
             email=raw_claims.get("email", ""),
             role=raw_claims.get("role", ""),
             org_id=raw_claims.get("org_id", ""),
-            jti=raw_claims.get("jti", ""),
+            jti=jti,
             groups=tuple(raw_claims.get("groups", [])),
         )
         return claims, raw_claims

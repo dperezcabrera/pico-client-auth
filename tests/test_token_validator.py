@@ -11,7 +11,13 @@ import pytest
 from pico_client_auth.config import AuthClientSettings
 from pico_client_auth.errors import TokenExpiredError, TokenInvalidError
 from pico_client_auth.jwks_client import JWKSClient
+from pico_client_auth.revocation_cache import RevocationCache
 from pico_client_auth.token_validator import TokenValidator
+
+
+def _no_revocations() -> RevocationCache:
+    """Disabled revocation cache (no endpoint → is_revoked() always False)."""
+    return RevocationCache(AuthClientSettings())
 
 
 @pytest.fixture
@@ -35,7 +41,7 @@ def mock_jwks_client(jwk_dict):
 
 @pytest.fixture
 def validator(settings, mock_jwks_client):
-    return TokenValidator(settings=settings, jwks_client=mock_jwks_client)
+    return TokenValidator(settings=settings, jwks_client=mock_jwks_client, revocation_cache=_no_revocations())
 
 
 class TestValidToken:
@@ -80,7 +86,7 @@ class TestBadSignature:
         }
         mock_client = AsyncMock(spec=JWKSClient)
         mock_client.get_key = AsyncMock(return_value=other_jwk)
-        validator = TokenValidator(settings=settings, jwks_client=mock_client)
+        validator = TokenValidator(settings=settings, jwks_client=mock_client, revocation_cache=_no_revocations())
 
         token = make_token()
         with pytest.raises(TokenInvalidError):
@@ -97,7 +103,7 @@ class TestWrongAudience:
             jwks_ttl_seconds=300,
             jwks_endpoint="https://auth.example.com/api/v1/auth/jwks",
         )
-        validator = TokenValidator(settings=settings, jwks_client=mock_jwks_client)
+        validator = TokenValidator(settings=settings, jwks_client=mock_jwks_client, revocation_cache=_no_revocations())
         token = make_token()
         with pytest.raises(TokenInvalidError):
             await validator.validate(token)
@@ -113,7 +119,7 @@ class TestWrongIssuer:
             jwks_ttl_seconds=300,
             jwks_endpoint="https://auth.example.com/api/v1/auth/jwks",
         )
-        validator = TokenValidator(settings=settings, jwks_client=mock_jwks_client)
+        validator = TokenValidator(settings=settings, jwks_client=mock_jwks_client, revocation_cache=_no_revocations())
         token = make_token()
         with pytest.raises(TokenInvalidError):
             await validator.validate(token)
@@ -131,7 +137,7 @@ class TestAlgorithmNotAccepted:
             jwks_endpoint="https://auth.example.com/api/v1/auth/jwks",
             accepted_algorithms=("ML-DSA-65",),
         )
-        validator = TokenValidator(settings=settings, jwks_client=mock_jwks_client)
+        validator = TokenValidator(settings=settings, jwks_client=mock_jwks_client, revocation_cache=_no_revocations())
         token = make_token()
         with pytest.raises(TokenInvalidError, match="not accepted"):
             await validator.validate(token)
@@ -156,7 +162,7 @@ class TestPQCDispatch:
             jwks_endpoint="https://auth.example.com/api/v1/auth/jwks",
             accepted_algorithms=("RS256", "ML-DSA-65"),
         )
-        validator = TokenValidator(settings=settings, jwks_client=mock_jwks)
+        validator = TokenValidator(settings=settings, jwks_client=mock_jwks, revocation_cache=_no_revocations())
         claims, raw = await validator.validate(token)
         assert claims.sub == "user-123"
         assert claims.email == "user@example.com"
@@ -179,14 +185,14 @@ class TestPQCDispatch:
             jwks_endpoint="https://auth.example.com/api/v1/auth/jwks",
             accepted_algorithms=("RS256", "ML-DSA-87"),
         )
-        validator = TokenValidator(settings=settings, jwks_client=mock_jwks)
+        validator = TokenValidator(settings=settings, jwks_client=mock_jwks, revocation_cache=_no_revocations())
         claims, raw = await validator.validate(token)
         assert claims.sub == "user-123"
 
     @pytest.mark.asyncio
     async def test_rs256_still_uses_jose(self, settings, mock_jwks_client, make_token):
         """RS256 token continues to use the python-jose path."""
-        validator = TokenValidator(settings=settings, jwks_client=mock_jwks_client)
+        validator = TokenValidator(settings=settings, jwks_client=mock_jwks_client, revocation_cache=_no_revocations())
         token = make_token()
         claims, raw = await validator.validate(token)
         assert claims.sub == "user-123"
@@ -247,7 +253,7 @@ class TestPQCDispatchMocked:
         mock_jwks.get_key = AsyncMock(return_value=jwk)
 
         token = _make_pqc_token_raw()
-        validator = TokenValidator(settings=_pqc_settings(), jwks_client=mock_jwks)
+        validator = TokenValidator(settings=_pqc_settings(), jwks_client=mock_jwks, revocation_cache=_no_revocations())
 
         with patch.dict("sys.modules", {"oqs": mock_oqs}):
             claims, raw = await validator.validate(token)
@@ -261,7 +267,7 @@ class TestPQCDispatchMocked:
         mock_jwks.get_key = AsyncMock(return_value=jwk)
 
         token = _make_pqc_token_raw()
-        validator = TokenValidator(settings=_pqc_settings(), jwks_client=mock_jwks)
+        validator = TokenValidator(settings=_pqc_settings(), jwks_client=mock_jwks, revocation_cache=_no_revocations())
 
         with pytest.raises(TokenInvalidError, match="pub"):
             await validator.validate(token)
@@ -272,7 +278,7 @@ class TestPQCDispatchMocked:
         mock_jwks.get_key = AsyncMock(side_effect=KeyError("unknown-kid"))
 
         token = _make_pqc_token_raw()
-        validator = TokenValidator(settings=_pqc_settings(), jwks_client=mock_jwks)
+        validator = TokenValidator(settings=_pqc_settings(), jwks_client=mock_jwks, revocation_cache=_no_revocations())
 
         with pytest.raises(TokenInvalidError, match="Invalid token"):
             await validator.validate(token)
@@ -290,7 +296,7 @@ class TestPQCDispatchMocked:
         mock_jwks.get_key = AsyncMock(return_value=jwk)
 
         token = _make_pqc_token_raw(alg="ML-DSA-87", kid="pqc-key-87")
-        validator = TokenValidator(settings=_pqc_settings(), jwks_client=mock_jwks)
+        validator = TokenValidator(settings=_pqc_settings(), jwks_client=mock_jwks, revocation_cache=_no_revocations())
 
         with patch.dict("sys.modules", {"oqs": mock_oqs}):
             claims, raw = await validator.validate(token)
