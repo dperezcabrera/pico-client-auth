@@ -162,12 +162,12 @@ Request Flow:
         |
 [AuthFastapiConfigurer]        -- priority=10 (inner middleware)
   1. Find matched route endpoint
-  2. Check @allow_anonymous → skip if present
+  2. Check @allow_anonymous  skip if present
   3. Extract Bearer token from Authorization header
-  4. TokenValidator.validate(token) → claims + raw_claims
-  5. RoleResolver.resolve(claims, raw_claims) → roles
+  4. TokenValidator.validate(token)  claims + raw_claims
+  5. RoleResolver.resolve(claims, raw_claims)  roles
   6. SecurityContext.set(claims, roles)
-  7. Check @requires_role → 403 if missing
+  7. Check @requires_role  403 if missing
   8. call_next(request)
   9. SecurityContext.clear() in finally
         |

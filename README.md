@@ -150,7 +150,7 @@ SecurityContext.require_group("team")  # raises InsufficientPermissionsError
 
 ## Agent Identity & Scopes *(v0.4.2+)*
 
-A request can carry **two** tokens. `Authorization: Bearer <service-token>` proves *which service* is calling (→ `SecurityContext`). `X-Agent-Authorization: Bearer <agent-token>` proves *which LLM agent is acting, on behalf of which user, with which scopes* (→ `AgentContext`). Both are validated through the same `TokenValidator`/JWKS.
+A request can carry **two** tokens. `Authorization: Bearer <service-token>` proves *which service* is calling ( `SecurityContext`). `X-Agent-Authorization: Bearer <agent-token>` proves *which LLM agent is acting, on behalf of which user, with which scopes* ( `AgentContext`). Both are validated through the same `TokenValidator`/JWKS.
 
 Gate an endpoint on agent scopes with `@requires_scope` — scope matching is a `:`-segmented glob, so `treasury:*` matches `treasury:write:budget:opex`:
 
@@ -201,7 +201,7 @@ class MyRoleResolver:
 | `auth_client.jwks_endpoint` | `""` | JWKS URL (default: `{issuer}/api/v1/auth/jwks`) |
 | `auth_client.accepted_algorithms` | `["RS256"]` | List of accepted JWT signing algorithms |
 | `auth_client.revocation_endpoint` | `""` | `jti` denylist URL to poll. Empty = revocation disabled |
-| `auth_client.revocation_ttl_seconds` | `15` | Poll interval / worst-case revoke→reject window |
+| `auth_client.revocation_ttl_seconds` | `15` | Poll interval / worst-case revokereject window |
 | `auth_client.revocation_bearer` | `""` | Optional bearer token for the revocation endpoint |
 
 ---
@@ -255,7 +255,7 @@ Requires `liboqs-python` (installed automatically with `pip install pico-client-
 ## How It Works
 
 - `AuthFastapiConfigurer` (priority=10) registers as an inner middleware
-- Every request: extract Bearer token → validate JWT via JWKS → resolve roles → populate SecurityContext
+- Every request: extract Bearer token  validate JWT via JWKS  resolve roles  populate SecurityContext
 - Algorithm dispatch: RS256 tokens use python-jose, ML-DSA tokens use liboqs
 - `@allow_anonymous` endpoints skip validation entirely
 - `@requires_role` endpoints check resolved roles, return 403 if missing

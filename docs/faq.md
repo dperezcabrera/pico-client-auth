@@ -114,9 +114,9 @@ The middleware checks the resolved roles (from `RoleResolver`) against the `@req
 
 ```python
 @requires_role("editor", "admin")
-# User with role "editor" → 200
-# User with role "admin" → 200
-# User with role "viewer" → 403
+# User with role "editor"  200
+# User with role "admin"  200
+# User with role "viewer"  403
 ```
 
 ### Can I check roles programmatically?
@@ -218,9 +218,9 @@ auth_client:
 
 **Common causes:**
 
-1. JWKS endpoint unreachable → check network / `jwks_endpoint` config
-2. Token signed with wrong key → ensure your auth server's JWKS matches
-3. Wrong issuer/audience → token's `iss`/`aud` must match config
+1. JWKS endpoint unreachable  check network / `jwks_endpoint` config
+2. Token signed with wrong key  ensure your auth server's JWKS matches
+3. Wrong issuer/audience  token's `iss`/`aud` must match config
 
 ### 403 when user has the right role
 

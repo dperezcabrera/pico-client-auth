@@ -122,7 +122,7 @@ class RoleRepository:
 The request flow:
 
 ```
-Request → Bearer token → TokenValidator (JWT signature)
+Request  Bearer token  TokenValidator (JWT signature)
                               ↓
                     DatabaseRoleResolver (DB + cache)
                               ↓

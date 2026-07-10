@@ -124,13 +124,13 @@ sequenceDiagram
 ```mermaid
 stateDiagram-v2
     [*] --> Empty: App starts
-    Empty --> Fetched: First token arrives → fetch JWKS
-    Fetched --> Fetched: kid found in cache → use cached key
+    Empty --> Fetched: First token arrives  fetch JWKS
+    Fetched --> Fetched: kid found in cache  use cached key
     Fetched --> Refreshing: kid NOT found (key rotation)
     Refreshing --> Fetched: Re-fetch JWKS, kid found
-    Refreshing --> Error: kid still not found → KeyError
+    Refreshing --> Error: kid still not found  KeyError
     Fetched --> Expired: TTL elapsed
-    Expired --> Fetched: Next request → re-fetch JWKS
+    Expired --> Fetched: Next request  re-fetch JWKS
 ```
 
 The `JWKSClient` caches all signing keys indexed by `kid`. When a token arrives with an unknown `kid`:
