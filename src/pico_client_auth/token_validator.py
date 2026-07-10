@@ -4,7 +4,8 @@ import base64
 import json
 import logging
 
-from jose import ExpiredSignatureError, JWTError, jwt
+import jwt
+from jwt import ExpiredSignatureError, PyJWTError
 from pico_ioc import component
 
 from . import pqc_jwt
@@ -93,7 +94,7 @@ class TokenValidator:
         return claims, raw_claims
 
     async def _validate_rsa(self, token: str, headers: dict) -> dict:
-        """Validate a JWT using python-jose (classical algorithms)."""
+        """Validate a JWT using PyJWT (classical algorithms)."""
         try:
             kid = headers.get("kid", "")
             key = await self._jwks_client.get_key(kid)
@@ -101,14 +102,14 @@ class TokenValidator:
 
             return jwt.decode(
                 token,
-                key,
+                jwt.PyJWK(dict(key)),
                 algorithms=jose_algorithms,
                 audience=self._settings.audience,
                 issuer=self._settings.issuer,
             )
         except ExpiredSignatureError as exc:
             raise TokenExpiredError("Token has expired") from exc
-        except (JWTError, KeyError) as exc:
+        except (PyJWTError, KeyError) as exc:
             raise TokenInvalidError(f"Invalid token: {exc}") from exc
 
     async def _validate_pqc(self, token: str, headers: dict, alg: str) -> dict:

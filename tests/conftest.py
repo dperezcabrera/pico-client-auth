@@ -5,10 +5,10 @@ import json
 import time
 from datetime import UTC, datetime, timedelta, timezone
 
+import jwt
 import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-from jose import jwt
 
 
 @pytest.fixture(scope="session")
