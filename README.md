@@ -5,7 +5,12 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 ![CI (tox matrix)](https://github.com/dperezcabrera/pico-client-auth/actions/workflows/ci.yml/badge.svg)
 [![codecov](https://codecov.io/gh/dperezcabrera/pico-client-auth/branch/main/graph/badge.svg)](https://codecov.io/gh/dperezcabrera/pico-client-auth)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=dperezcabrera_pico-client-auth&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=dperezcabrera_pico-client-auth)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=dperezcabrera_pico-client-auth&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=dperezcabrera_pico-client-auth)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=dperezcabrera_pico-client-auth&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=dperezcabrera_pico-client-auth)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/pico-client-auth)](https://pypi.org/project/pico-client-auth/)
 [![Docs](https://img.shields.io/badge/Docs-pico--client--auth-blue?style=flat&logo=readthedocs&logoColor=white)](https://dperezcabrera.github.io/pico-client-auth/)
+[![Interactive Lab](https://img.shields.io/badge/Learn-online-green?style=flat&logo=python&logoColor=white)](https://dperezcabrera.github.io/pico-learn/)
 
 **[Pico-Client-Auth](https://github.com/dperezcabrera/pico-client-auth)** provides JWT authentication for **[pico-fastapi](https://github.com/dperezcabrera/pico-fastapi)** applications. It integrates with the pico-ioc container to deliver automatic Bearer token validation, a request-scoped `SecurityContext`, role-based access control, and JWKS key rotation support.
 
@@ -258,6 +263,16 @@ Requires `liboqs-python` (installed automatically with `pip install pico-client-
 - SecurityContext is cleared in `finally` — no leakage between requests
 
 ---
+
+## AI Coding Skills
+
+Install [Claude Code](https://code.claude.com) or [OpenAI Codex](https://openai.com/index/introducing-codex/) skills for AI-assisted development with pico-client-auth:
+
+```bash
+curl -sL https://raw.githubusercontent.com/dperezcabrera/pico-skills/main/install.sh | bash
+```
+
+The `pico-conventions` skill teaches the assistant this module's API surface and invariants; `/add-component` and `/add-tests` scaffold components and tests that use it.
 
 ## License
 

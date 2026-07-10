@@ -153,5 +153,7 @@ nav:
     - Configuration: reference/config.md
     - Exceptions: reference/exceptions.md
   - Architecture: architecture.md
+  - AI Coding Skills: skills.md
   - FAQ: faq.md
+  - Troubleshooting: troubleshooting.md
   - Changelog: CHANGELOG.md
