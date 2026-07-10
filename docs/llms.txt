@@ -1,0 +1,31 @@
+# pico-client-auth
+
+> JWT authentication client for pico-fastapi with SecurityContext, role-based access control, and JWKS key rotation
+
+## Docs
+
+- [Home](https://dperezcabrera.github.io/pico-client-auth/)
+- [Getting Started](https://dperezcabrera.github.io/pico-client-auth/getting-started/)
+- [Tutorial](https://dperezcabrera.github.io/pico-client-auth/tutorial/)
+- [index](https://dperezcabrera.github.io/pico-client-auth/user-guide/)
+- [SecurityContext](https://dperezcabrera.github.io/pico-client-auth/user-guide/security-context/)
+- [Role Resolver](https://dperezcabrera.github.io/pico-client-auth/user-guide/role-resolver/)
+- [index](https://dperezcabrera.github.io/pico-client-auth/how-to/)
+- [Custom Role Resolver](https://dperezcabrera.github.io/pico-client-auth/how-to/custom-roles/)
+- [Public Endpoints](https://dperezcabrera.github.io/pico-client-auth/how-to/allow-anonymous/)
+- [Testing Auth](https://dperezcabrera.github.io/pico-client-auth/how-to/testing/)
+- [index](https://dperezcabrera.github.io/pico-client-auth/reference/)
+- [Configuration](https://dperezcabrera.github.io/pico-client-auth/reference/config/)
+- [Exceptions](https://dperezcabrera.github.io/pico-client-auth/reference/exceptions/)
+- [Architecture](https://dperezcabrera.github.io/pico-client-auth/architecture/)
+- [AI Coding Skills](https://dperezcabrera.github.io/pico-client-auth/skills/)
+- [FAQ](https://dperezcabrera.github.io/pico-client-auth/faq/)
+- [Troubleshooting](https://dperezcabrera.github.io/pico-client-auth/troubleshooting/)
+- [Changelog](https://dperezcabrera.github.io/pico-client-auth/CHANGELOG/)
+
+## For agents
+
+- [Full docs in one file](https://dperezcabrera.github.io/pico-client-auth/llms-full.txt)
+- [AGENTS.md (conventions and boundaries)](https://raw.githubusercontent.com/dperezcabrera/pico-client-auth/main/AGENTS.md)
+- [Flagship use case (whole ecosystem wired)](https://dperezcabrera.github.io/pico-boot/flagship/)
+- [PyPI](https://pypi.org/project/pico-client-auth/)
