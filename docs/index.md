@@ -146,3 +146,5 @@ class MyRoleResolver:
 1. **New to pico-client-auth?** Start with [Getting Started](./getting-started.md)
 2. **Want examples?** Check the [How-To Guides](./how-to/index.md)
 3. **Need custom roles?** Read [Custom Role Resolver](./how-to/custom-roles.md)
+
+**See it in context**: the [flagship use case](https://dperezcabrera.github.io/pico-boot/flagship/) wires this module into a full order platform together with the rest of the ecosystem.
