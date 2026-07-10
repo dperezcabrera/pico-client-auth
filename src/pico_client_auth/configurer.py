@@ -24,14 +24,33 @@ from .token_validator import TokenValidator
 logger = logging.getLogger(__name__)
 
 
+def _iter_leaf_routes(routes):
+    """Yield endpoint-bearing routes, descending into nested routers.
+
+    starlette >= 1.x wraps included routers (``_IncludedRouter``) so
+    ``app.routes`` is no longer flat; walk ``routes`` /
+    ``original_router.routes`` recursively to stay version-agnostic.
+    """
+    for route in routes:
+        inner = getattr(route, "routes", None)
+        if inner is None:
+            inner = getattr(getattr(route, "original_router", None), "routes", None)
+        if inner:
+            yield from _iter_leaf_routes(inner)
+        else:
+            yield route
+
+
 def _find_endpoint(app: FastAPI, scope: dict):
     """Resolve the route endpoint function for the given ASGI scope.
 
-    Walks the app's routes and returns the first matching endpoint,
-    or ``None`` if no route matches.
+    Returns the first matching endpoint, or ``None`` if no route matches.
     """
-    for route in app.routes:
-        match, _ = route.matches(scope)
+    for route in _iter_leaf_routes(app.routes):
+        try:
+            match, _ = route.matches(scope)
+        except Exception:  # noqa: BLE001 - a foreign route type must not break auth
+            continue
         if match == Match.FULL:
             return getattr(route, "endpoint", None)
     return None
