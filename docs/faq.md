@@ -112,7 +112,7 @@ No. FastAPI's built-in documentation routes are not controller routes, so the au
 
 The middleware checks the resolved roles (from `RoleResolver`) against the `@requires_role` decorator's role set. If the user has **at least one** matching role, access is granted. Otherwise, 403 Forbidden.
 
-```python
+```text
 @requires_role("editor", "admin")
 # User with role "editor"  200
 # User with role "admin"  200
@@ -125,6 +125,7 @@ Yes, using `SecurityContext`:
 
 ```python
 if SecurityContext.has_role("admin"):
+    ...
     # ...
 
 SecurityContext.require_role("admin", "superuser")  # raises if missing

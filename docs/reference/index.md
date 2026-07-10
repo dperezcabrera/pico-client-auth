@@ -52,7 +52,7 @@ Sets `_pico_allow_anonymous = True` on the function. The auth middleware checks 
 
 Requires the authenticated user to have at least one of the specified roles.
 
-```python
+```text
 @requires_role(*roles: str)
 ```
 
@@ -161,8 +161,10 @@ Base exception for all pico-client-auth errors.
 
 ```python
 try:
+    ...
     # pico-client-auth operations
 except AuthClientError as e:
+    ...
     # Handle any auth error
 ```
 

@@ -76,6 +76,7 @@ print(claims.sub, claims.email, claims.org_id)
 
 # Check roles
 if SecurityContext.has_role("admin"):
+    ...
     # ...
 ```
 

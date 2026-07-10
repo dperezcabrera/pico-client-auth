@@ -32,6 +32,7 @@ claims = SecurityContext.require()
 ```python
 # Boolean check
 if SecurityContext.has_role("admin"):
+    ...
     # ...
 
 # Get all roles
@@ -49,6 +50,7 @@ groups = SecurityContext.get_groups()  # e.g. ("engineering", "platform")
 
 # Boolean check
 if SecurityContext.has_group("engineering"):
+    ...
     # ...
 
 # Assert group membership (raises InsufficientPermissionsError)
