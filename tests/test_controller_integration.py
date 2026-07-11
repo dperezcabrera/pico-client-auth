@@ -27,8 +27,7 @@ class ItController:
         return {"secret": True}
 
 
-def test_controller_markers_enforced(monkeypatch):
-    monkeypatch.setenv("PICO_BOOT_AUTO_PLUGINS", "false")
+def test_controller_markers_enforced():
     cfg = configuration(
         DictSource(
             {
