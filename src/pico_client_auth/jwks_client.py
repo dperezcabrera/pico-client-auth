@@ -26,8 +26,7 @@ def _require_https(url: str) -> None:
     if parsed.scheme == "http" and parsed.hostname in _LOCAL_HOSTS:
         return
     raise ValueError(
-        f"Insecure endpoint scheme for {url!r}: only https is allowed "
-        "(http permitted for localhost/127.0.0.1 only)"
+        f"Insecure endpoint scheme for {url!r}: only https is allowed (http permitted for localhost/127.0.0.1 only)"
     )
 
 
