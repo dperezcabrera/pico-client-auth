@@ -65,6 +65,13 @@ class TokenValidator:
         headers = _get_unverified_headers(token)
         alg = headers.get("alg", "RS256")
 
+        # SECURITY: hard-reject symmetric HS* algorithms regardless of the
+        # accepted_algorithms config. This validator only uses asymmetric
+        # JWK/public keys, so an HS* token would imply an HS/RS confusion
+        # attack (signing with the public key as the HMAC secret).
+        if alg.upper().startswith("HS"):
+            raise TokenInvalidError(f"Symmetric algorithm '{alg}' is not permitted")
+
         if alg not in self._settings.accepted_algorithms:
             raise TokenInvalidError(f"Algorithm '{alg}' is not accepted")
 
@@ -98,7 +105,15 @@ class TokenValidator:
         try:
             kid = headers.get("kid", "")
             key = await self._jwks_client.get_key(kid)
-            jose_algorithms = [a for a in self._settings.accepted_algorithms if a not in _PQC_ALGORITHMS]
+            # SECURITY: This is the asymmetric JWK/public-key path. Symmetric
+            # HS* algorithms are hard-rejected regardless of accepted_algorithms
+            # config to prevent HS/RS confusion attacks (an attacker signing an
+            # HS256 token using the public key as the HMAC secret).
+            jose_algorithms = [
+                a
+                for a in self._settings.accepted_algorithms
+                if a not in _PQC_ALGORITHMS and not a.upper().startswith("HS")
+            ]
 
             return jwt.decode(
                 token,
@@ -106,6 +121,8 @@ class TokenValidator:
                 algorithms=jose_algorithms,
                 audience=self._settings.audience,
                 issuer=self._settings.issuer,
+                # SECURITY: reject tokens that omit `exp` so they cannot live forever.
+                options={"require": ["exp"]},
             )
         except ExpiredSignatureError as exc:
             raise TokenExpiredError("Token has expired") from exc

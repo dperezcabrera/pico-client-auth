@@ -93,10 +93,13 @@ class TestValidateClaims:
         with pytest.raises(TokenExpiredError, match="expired"):
             _validate_claims(claims, "https://auth.example.com", "my-api")
 
-    def test_no_exp_passes(self):
+    def test_no_exp_rejected(self):
+        # SECURITY: a token without an exp claim must never validate
+        # (otherwise it would be accepted forever).
         claims = _valid_payload()
         del claims["exp"]
-        _validate_claims(claims, "https://auth.example.com", "my-api")
+        with pytest.raises(TokenInvalidError, match="exp"):
+            _validate_claims(claims, "https://auth.example.com", "my-api")
 
     def test_wrong_issuer_raises(self):
         claims = _valid_payload()

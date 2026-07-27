@@ -60,10 +60,22 @@ def _verify_signature(oqs, algorithm: str, signing_input: bytes, signature: byte
 
 
 def _validate_claims(claims: dict, issuer: str, audience: str) -> None:
-    """Validate exp, iss, and aud claims."""
+    """Validate exp, nbf, iss, and aud claims."""
+    now = time.time()
+
+    # SECURITY: `exp` is mandatory. A token without it must be rejected rather
+    # than treated as non-expiring.
     exp = claims.get("exp")
-    if exp is not None and time.time() > exp:
+    if exp is None:
+        raise TokenInvalidError("Token missing required 'exp' claim")
+    if now > exp:
         raise TokenExpiredError("Token has expired")
+
+    # SECURITY: enforce `nbf` (not-before) when present — reject tokens that
+    # are not yet valid.
+    nbf = claims.get("nbf")
+    if nbf is not None and now < nbf:
+        raise TokenInvalidError("Token is not yet valid (nbf)")
 
     if claims.get("iss") != issuer:
         raise TokenInvalidError(f"Invalid issuer: expected {issuer}, got {claims.get('iss')}")

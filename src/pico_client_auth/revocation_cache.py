@@ -21,6 +21,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+from urllib.parse import urlparse
 
 import httpx
 from pico_ioc import component
@@ -28,6 +29,23 @@ from pico_ioc import component
 from .config import AuthClientSettings
 
 logger = logging.getLogger(__name__)
+
+_LOCAL_HOSTS = ("localhost", "127.0.0.1", "::1")
+
+
+def _require_https(url: str) -> None:
+    """Reject plaintext http:// endpoints (the bearer token / denylist must
+    travel over TLS). Exception: localhost / 127.0.0.1 / ::1 over http for dev.
+    """
+    parsed = urlparse(url)
+    if parsed.scheme == "https":
+        return
+    if parsed.scheme == "http" and parsed.hostname in _LOCAL_HOSTS:
+        return
+    raise ValueError(
+        f"Insecure revocation endpoint scheme for {url!r}: only https is allowed "
+        "(http permitted for localhost/127.0.0.1 only)"
+    )
 
 
 @component
@@ -37,6 +55,9 @@ class RevocationCache:
         self._revoked: set[str] = set()
         self._fetched_at: float = 0.0
         self._lock = asyncio.Lock()
+        # Tracks whether the most recent fetch attempt succeeded. Drives
+        # fail-closed behaviour in is_revoked() when a fetch errors out.
+        self._last_fetch_ok: bool = False
 
     @property
     def enabled(self) -> bool:
@@ -53,6 +74,8 @@ class RevocationCache:
             "Fetching revocation denylist from %s",
             self._settings.revocation_endpoint,
         )
+        # SECURITY: require TLS for the revocation endpoint (carries a bearer token).
+        _require_https(self._settings.revocation_endpoint)
         headers = {}
         if self._settings.revocation_bearer:
             headers["Authorization"] = f"Bearer {self._settings.revocation_bearer}"
@@ -65,13 +88,13 @@ class RevocationCache:
                 r.raise_for_status()
                 data = r.json()
         except Exception as exc:  # noqa: BLE001
-            # Fail-open on transient fetch errors — using a stale
-            # denylist for a few extra seconds is preferable to
-            # rejecting every legit request because the auth
-            # server hiccupped. The operator can still rotate
-            # JWKS for a hard cutoff.
+            # SECURITY: fetch error. Mark the fetch as failed so is_revoked()
+            # can fail closed by default (treat as unable-to-confirm). The
+            # legacy fail-open behaviour (serve a stale denylist) is opt-in via
+            # ``revocation_fail_open``.
+            self._last_fetch_ok = False
             logger.warning(
-                "revocation cache fetch failed (using stale): %s",
+                "revocation cache fetch failed: %s",
                 exc,
             )
             self._fetched_at = time.monotonic()
@@ -79,6 +102,7 @@ class RevocationCache:
         items = data.get("items", []) or []
         self._revoked = {str(it.get("jti", "")) for it in items if it.get("jti")}
         self._fetched_at = time.monotonic()
+        self._last_fetch_ok = True
         logger.debug(
             "revocation cache refreshed: %d entries",
             len(self._revoked),
@@ -99,7 +123,17 @@ class RevocationCache:
             async with self._lock:
                 if self._is_expired():
                     await self._fetch()
-        return jti in self._revoked
+        if jti in self._revoked:
+            return True
+        # SECURITY: if the last fetch failed we cannot confirm the token is NOT
+        # revoked. Fail closed by default (report revoked); fail-open is opt-in.
+        if not self._last_fetch_ok and not self._settings.revocation_fail_open:
+            logger.warning(
+                "revocation status unknown (fetch failed); failing closed for jti=%s",
+                jti,
+            )
+            return True
+        return False
 
     async def force_refresh(self) -> None:
         """Forces an immediate re-poll regardless of TTL. Used by

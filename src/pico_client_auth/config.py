@@ -38,6 +38,11 @@ class AuthClientSettings:
     # round-trips. JWKS rotation remains the instant-kill path.
     revocation_endpoint: str = ""
     revocation_ttl_seconds: int = 15
+    # SECURITY: on a revocation-fetch error, fail closed by default — treat the
+    # token as unable-to-confirm (revoked) rather than serving a stale denylist
+    # (fail-open). Set True to restore the old fail-open behaviour if availability
+    # matters more than promptly honouring revocations.
+    revocation_fail_open: bool = False
     # If the revocation endpoint requires a Bearer token (the
     # default — pico-server-auth gates it behind role=service),
     # the auth-client uses this token for the poll. Empty falls

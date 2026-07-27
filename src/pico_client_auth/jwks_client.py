@@ -2,6 +2,7 @@
 
 import logging
 import time
+from urllib.parse import urlparse
 
 import httpx
 from pico_ioc import component
@@ -9,6 +10,25 @@ from pico_ioc import component
 from .config import AuthClientSettings
 
 logger = logging.getLogger(__name__)
+
+_LOCAL_HOSTS = ("localhost", "127.0.0.1", "::1")
+
+
+def _require_https(url: str) -> None:
+    """Reject plaintext http:// endpoints (secrets/keys must travel over TLS).
+
+    Exception: localhost / 127.0.0.1 / ::1 are allowed over http for local
+    development.
+    """
+    parsed = urlparse(url)
+    if parsed.scheme == "https":
+        return
+    if parsed.scheme == "http" and parsed.hostname in _LOCAL_HOSTS:
+        return
+    raise ValueError(
+        f"Insecure endpoint scheme for {url!r}: only https is allowed "
+        "(http permitted for localhost/127.0.0.1 only)"
+    )
 
 
 @component
@@ -30,7 +50,10 @@ class JWKSClient:
 
     async def _fetch_keys(self) -> None:
         logger.debug("Fetching JWKS from %s", self._endpoint)
-        async with httpx.AsyncClient() as client:
+        # SECURITY: require TLS (https) for the JWKS endpoint and bound the
+        # request with a timeout so a hung server can't stall validation.
+        _require_https(self._endpoint)
+        async with httpx.AsyncClient(timeout=5.0) as client:
             response = await client.get(self._endpoint)
             response.raise_for_status()
             data = response.json()
