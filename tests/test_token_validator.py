@@ -301,3 +301,14 @@ class TestPQCDispatchMocked:
         with patch.dict("sys.modules", {"oqs": mock_oqs}):
             claims, raw = await validator.validate(token)
             assert claims.sub == "user-123"
+
+
+class TestRevokedToken:
+    @pytest.mark.asyncio
+    async def test_revoked_jti_is_rejected(self, settings, mock_jwks_client, make_token):
+        """A validly-signed token whose jti is revoked must be rejected."""
+        revocations = AsyncMock(spec=RevocationCache)
+        revocations.is_revoked = AsyncMock(return_value=True)
+        validator = TokenValidator(settings=settings, jwks_client=mock_jwks_client, revocation_cache=revocations)
+        with pytest.raises(TokenInvalidError, match="revoked"):
+            await validator.validate(make_token())
