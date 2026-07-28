@@ -1,4 +1,4 @@
-"""Tests for RevocationCache — TTL polling, fail-open policy, and the disabled default."""
+"""Tests for RevocationCache — TTL polling, fail-closed default (fail-open opt-in), and the disabled default."""
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -145,18 +145,25 @@ class TestTtl:
         assert mock_http.get.call_count == 2
 
 
-class TestFailOpen:
+class TestFetchErrorPolicy:
     @pytest.mark.asyncio
-    async def test_fetch_error_fails_open(self, caplog):
+    async def test_fetch_error_fails_closed_by_default(self, caplog):
         cache = RevocationCache(_settings())
         ctx, _ = _mock_http_client(error=ConnectionError("auth server down"))
         with _patch_httpx(ctx), caplog.at_level("WARNING"):
-            assert await cache.is_revoked("j1") is False
-        assert "using stale" in caplog.text
+            assert await cache.is_revoked("j1") is True
+        assert "failing closed" in caplog.text
 
     @pytest.mark.asyncio
-    async def test_fetch_error_keeps_stale_denylist(self):
-        cache = RevocationCache(_settings())
+    async def test_fail_open_is_opt_in(self):
+        cache = RevocationCache(_settings(revocation_fail_open=True))
+        ctx, _ = _mock_http_client(error=ConnectionError("auth server down"))
+        with _patch_httpx(ctx):
+            assert await cache.is_revoked("j1") is False
+
+    @pytest.mark.asyncio
+    async def test_fail_open_keeps_stale_denylist(self):
+        cache = RevocationCache(_settings(revocation_fail_open=True))
         good_ctx, _ = _mock_http_client({"items": [{"jti": "j1"}]})
         with _patch_httpx(good_ctx):
             assert await cache.is_revoked("j1") is True
