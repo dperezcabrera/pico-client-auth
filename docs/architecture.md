@@ -231,7 +231,7 @@ flowchart TD
     H --> C{alg in accepted_algorithms?}
     C -->|No| R[Reject — TokenInvalidError]
     C -->|Yes| D{Algorithm type}
-    D -->|RS256| J[python-jose path]
+    D -->|RS256| J[PyJWT path]
     D -->|ML-DSA-65 / ML-DSA-87| P[pqc_jwt path via liboqs]
     J --> V[Validated claims]
     P --> V

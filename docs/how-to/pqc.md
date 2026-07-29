@@ -77,7 +77,7 @@ Your auth server's JWKS endpoint must serve ML-DSA public keys using the `AKP` k
 
 When a JWT arrives, `TokenValidator` reads the `alg` header and dispatches:
 
-1. **RS256** tokens are verified via python-jose (existing path)
+1. **RS256** tokens are verified via PyJWT (existing path)
 2. **ML-DSA-65 / ML-DSA-87** tokens are verified via `pqc_jwt` using liboqs
 3. Tokens with algorithms **not** in `accepted_algorithms` are rejected with `TokenInvalidError`
 

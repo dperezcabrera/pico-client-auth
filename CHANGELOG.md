@@ -6,6 +6,30 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [Unreleased]
+
+### Changed
+
+- **Revocation cache fails closed by default**: when the denylist fetch fails, tokens with a `jti` are rejected instead of accepted, because revocation status cannot be confirmed. The previous fail-open behavior (serve a stale denylist and accept on unknown) is opt-in via `auth_client.revocation_fail_open: true`.
+- Token validation hardened: `exp` is mandatory, symmetric `HS*` algorithms are rejected regardless of `accepted_algorithms` (RS/HS confusion defense), and the JWKS/revocation endpoints must use HTTPS (`http` allowed for localhost only).
+
+### Added
+
+- Security regression tests covering the HS* rejection, HTTPS-only endpoints and revoked-`jti` rejection.
+
+## v0.5.0 — PyJWT Migration (2026-07-10)
+
+### Changed
+
+- JWT validation migrated from `python-jose` to `PyJWT[crypto]`. Tokens are wire-compatible; no configuration changes needed. Aligned with pico-server-auth 0.2.0 issuing through PyJWT.
+
+## v0.4.3 — Docs & CI (2026-07-10)
+
+### Changed
+
+- Documentation raised to the fleet standard (docs QA at zero, AI-first `llms.txt`, flagship use case linked, emojis stripped).
+- SonarCloud analysis runs from CI on main pushes.
+
 ## v0.4.2 — Agentic Identity & Scope Authorization (2026-06-07)
 
 ### Added

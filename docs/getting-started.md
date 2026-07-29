@@ -22,7 +22,7 @@ This installs:
 - `pico-client-auth` - JWT authentication client
 - `pico-fastapi` - FastAPI integration (dependency)
 - `pico-ioc` - Core DI container (dependency)
-- `python-jose` - JWT decoding
+- `PyJWT` - JWT decoding
 - `httpx` - JWKS HTTP client
 - `liboqs-python` - ML-DSA signature verification (only with `[pqc]` extra)
 

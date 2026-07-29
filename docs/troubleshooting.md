@@ -24,8 +24,11 @@ instant fleet-wide invalidation.
 ## Revocation checks never happen
 
 The cache is disabled unless `auth_client.revocation_endpoint` is set —
-opt-in by design. Note the fail-open policy: if the auth server is down,
-the last known denylist keeps being used instead of rejecting everyone.
+opt-in by design. Note the fail-closed policy: if the denylist cannot be
+fetched, tokens with a `jti` are rejected because their revocation status
+cannot be confirmed. To keep the previous fail-open behavior (serve the
+last known denylist and accept on unknown), set
+`auth_client.revocation_fail_open: true`.
 
 ## @requires_role passes in tests when it should not
 

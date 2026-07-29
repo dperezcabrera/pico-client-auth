@@ -13,7 +13,7 @@ A typical test creates an RSA keypair, signs test tokens, and mocks the JWKS cli
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
-from jose import jwt
+import jwt
 from datetime import datetime, timedelta, UTC
 import base64
 

@@ -256,7 +256,7 @@ Requires `liboqs-python` (installed automatically with `pip install pico-client-
 
 - `AuthFastapiConfigurer` (priority=10) registers as an inner middleware
 - Every request: extract Bearer token  validate JWT via JWKS  resolve roles  populate SecurityContext
-- Algorithm dispatch: RS256 tokens use python-jose, ML-DSA tokens use liboqs
+- Algorithm dispatch: RS256 tokens use PyJWT, ML-DSA tokens use liboqs
 - `@allow_anonymous` endpoints skip validation entirely
 - `@requires_role` endpoints check resolved roles, return 403 if missing
 - `@requires_group` endpoints check group membership, return 403 if missing
