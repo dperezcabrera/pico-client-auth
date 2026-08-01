@@ -303,8 +303,11 @@ async def test_override_in_container(mock_repo):
     from pico_client_auth import RoleResolver
     from pico_ioc import init
 
+    # Tests use pico_ioc.init, not pico_boot.init: it loads exactly the listed
+    # modules, so other pico plugins installed in the venv cannot leak in.
+    # That is why "pico_client_auth" is declared explicitly.
     container = init(
-        modules=["myapp"],
+        modules=["pico_client_auth", "myapp"],
         overrides={RoleResolver: DatabaseRoleResolver(role_repository=mock_repo)},
     )
     resolver = container.get(RoleResolver)
