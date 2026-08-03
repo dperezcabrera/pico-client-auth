@@ -190,8 +190,8 @@ class TestPQCDispatch:
         assert claims.sub == "user-123"
 
     @pytest.mark.asyncio
-    async def test_rs256_still_uses_jose(self, settings, mock_jwks_client, make_token):
-        """RS256 token continues to use the python-jose path."""
+    async def test_rs256_uses_the_pyjwt_path(self, settings, mock_jwks_client, make_token):
+        """RS256 token is validated through the PyJWT/JWKS path."""
         validator = TokenValidator(settings=settings, jwks_client=mock_jwks_client, revocation_cache=_no_revocations())
         token = make_token()
         claims, raw = await validator.validate(token)

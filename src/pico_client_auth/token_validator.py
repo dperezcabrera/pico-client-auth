@@ -109,7 +109,7 @@ class TokenValidator:
             # HS* algorithms are hard-rejected regardless of accepted_algorithms
             # config to prevent HS/RS confusion attacks (an attacker signing an
             # HS256 token using the public key as the HMAC secret).
-            jose_algorithms = [
+            asymmetric_algorithms = [
                 a
                 for a in self._settings.accepted_algorithms
                 if a not in _PQC_ALGORITHMS and not a.upper().startswith("HS")
@@ -118,7 +118,7 @@ class TokenValidator:
             return jwt.decode(
                 token,
                 jwt.PyJWK(dict(key)),
-                algorithms=jose_algorithms,
+                algorithms=asymmetric_algorithms,
                 audience=self._settings.audience,
                 issuer=self._settings.issuer,
                 # SECURITY: reject tokens that omit `exp` so they cannot live forever.

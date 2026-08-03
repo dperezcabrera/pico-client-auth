@@ -1,7 +1,7 @@
 """ML-DSA (post-quantum) JWT decode and verification.
 
 Provides custom JWT verification for ML-DSA-65 and ML-DSA-87 signatures,
-since python-jose does not support post-quantum algorithms.
+since PyJWT does not support post-quantum algorithms.
 
 Requires the ``liboqs-python`` package (install via the ``pqc`` extra).
 """
