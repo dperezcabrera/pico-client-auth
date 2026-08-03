@@ -16,7 +16,11 @@ Fields:
 - `audience: str` — Expected JWT audience (`aud` claim). Required when enabled.
 - `jwks_ttl_seconds: int` — How long to cache the JWKS key set. Default: `300`.
 - `jwks_endpoint: str` — URL to fetch JWKS from. Default: `{issuer}/api/v1/auth/jwks`.
-- `accepted_algorithms: tuple[str, ...]` — JWT signing algorithms to accept. Default: `("RS256",)`. Add `"ML-DSA-65"` or `"ML-DSA-87"` for post-quantum support.
+- `accepted_algorithms: tuple[str, ...]` — JWT signing algorithms to accept. Default: `("RS256",)`. Add `"ML-DSA-65"` or `"ML-DSA-87"` for post-quantum support. Symmetric `HS*` algorithms are rejected even if listed here.
+- `revocation_endpoint: str` — `jti` denylist URL to poll. Default: `""` (revocation disabled). Must be `https` (`http` allowed for localhost only).
+- `revocation_ttl_seconds: int` — Poll interval, and the worst-case window between a revocation and validators honouring it. Default: `15`.
+- `revocation_bearer: str` — Bearer token for the revocation endpoint when it is gated. Default: `""`.
+- `revocation_fail_open: bool` — When a denylist fetch fails, accept tokens instead of rejecting them. Default: `False` (fail closed).
 
 How to use:
 - Provide a configuration source with an `auth_client` prefix when initializing the container.

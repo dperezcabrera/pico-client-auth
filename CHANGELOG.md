@@ -8,14 +8,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## v0.6.0 — Token Validation Hardening (2026-08-03)
+
 ### Changed
 
 - **Revocation cache fails closed by default**: when the denylist fetch fails, tokens with a `jti` are rejected instead of accepted, because revocation status cannot be confirmed. The previous fail-open behavior (serve a stale denylist and accept on unknown) is opt-in via `auth_client.revocation_fail_open: true`.
 - Token validation hardened: `exp` is mandatory, symmetric `HS*` algorithms are rejected regardless of `accepted_algorithms` (RS/HS confusion defense), and the JWKS/revocation endpoints must use HTTPS (`http` allowed for localhost only).
+- `nbf` (not-before) is enforced when the claim is present.
 
 ### Added
 
+- `auth_client.revocation_fail_open` setting to restore the previous fail-open revocation behavior.
 - Security regression tests covering the HS* rejection, HTTPS-only endpoints and revoked-`jti` rejection.
+- Generated `llms.txt`: AI-first API reference for coding agents.
 
 ## v0.5.0 — PyJWT Migration (2026-07-10)
 

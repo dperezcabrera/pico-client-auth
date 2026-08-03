@@ -172,6 +172,16 @@ async def make_payment():
 
 Set `revocation_endpoint` to have the validator reject tokens whose `jti` is on the issuer's denylist. The cache is polled every `revocation_ttl_seconds` (default 15s — the worst-case window between an operator revoking and validators rejecting). Empty endpoint (default) = signature-only validation. JWKS rotation remains the instant-kill path.
 
+If a poll fails, tokens carrying a `jti` are **rejected**: a denylist that cannot be reached means revocation status cannot be confirmed. Set `revocation_fail_open: true` to accept them instead, trading prompt revocation for availability.
+
+## Token Validation Hardening *(v0.6.0+)*
+
+Three rules the validator enforces unconditionally, independent of configuration:
+
+- **`exp` is mandatory.** A token without an expiry is rejected rather than treated as non-expiring. `nbf` is enforced when present.
+- **Symmetric `HS*` algorithms are rejected**, even if listed in `accepted_algorithms`. This path verifies with public keys, so an `HS256` token implies an RS/HS confusion attack — signing with the public key as the HMAC secret.
+- **JWKS and revocation endpoints must be `https`.** Plain `http` is permitted only for `localhost`, `127.0.0.1` and `::1`, so development still works.
+
 ---
 
 ## Custom Role Resolver
@@ -203,6 +213,7 @@ class MyRoleResolver:
 | `auth_client.revocation_endpoint` | `""` | `jti` denylist URL to poll. Empty = revocation disabled |
 | `auth_client.revocation_ttl_seconds` | `15` | Poll interval / worst-case revokereject window |
 | `auth_client.revocation_bearer` | `""` | Optional bearer token for the revocation endpoint |
+| `auth_client.revocation_fail_open` | `false` | Accept tokens when the denylist fetch fails instead of rejecting them |
 
 ---
 
