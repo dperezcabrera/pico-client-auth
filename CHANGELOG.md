@@ -8,6 +8,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## v0.7.0 — Replaceable key source (2026-08-04)
+
+### Added
+
+- `JWKSClient` is exported from the package facade. It is the container key the validator resolves, so registering `@component(name=JWKSClient, primary=True)` is now a supported way to supply keys from somewhere other than the issuer's HTTPS endpoint — no subclassing required, any component providing `async get_key(kid) -> dict` satisfies it.
+- README section documenting the pattern, pinned by `TestReplaceableKeySource`: the regression test resolves a real container and asserts a non-subclass override wins.
+
 ## v0.6.0 — Token Validation Hardening (2026-08-03)
 
 ### Changed

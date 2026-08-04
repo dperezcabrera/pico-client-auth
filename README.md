@@ -200,6 +200,27 @@ class MyRoleResolver:
 
 ---
 
+## Custom Key Source *(v0.7.0+)*
+
+By default keys are fetched from the issuer's JWKS endpoint over HTTPS. Register your own component under the `JWKSClient` key to source them elsewhere — an auth server validating its own tokens, for instance, can read them straight from its signer instead of calling itself over the network:
+
+```python
+from pico_ioc import component
+from pico_client_auth import JWKSClient
+
+@component(name=JWKSClient, primary=True)
+class LocalJWKSProvider:
+    def __init__(self, signer: MySigner):
+        self._keys = {k["kid"]: k for k in signer.jwks()["keys"]}
+
+    async def get_key(self, kid: str) -> dict:
+        return self._keys[kid]
+```
+
+No subclassing: `JWKSClient` is the container key, and any component providing `async get_key(kid) -> dict` satisfies it. Raising `KeyError` for an unknown `kid` is what signals "no such key" to the validator.
+
+---
+
 ## Configuration
 
 | Key | Default | Description |

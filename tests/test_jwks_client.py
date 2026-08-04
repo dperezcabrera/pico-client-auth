@@ -3,6 +3,7 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from pico_ioc import component
 
 from pico_client_auth.config import AuthClientSettings
 from pico_client_auth.jwks_client import JWKSClient
@@ -103,3 +104,33 @@ class TestEndpointDefault:
     def test_strips_trailing_slash_from_issuer(self):
         client = JWKSClient(settings=_settings(issuer="https://auth.example.com/", jwks_endpoint=""))
         assert client._endpoint == "https://auth.example.com/api/v1/auth/jwks"
+
+
+class TestReplaceableKeySource:
+    """The README documents replacing the key source without subclassing."""
+
+    def test_jwks_client_is_exported_as_the_container_key(self):
+        import pico_client_auth
+
+        assert pico_client_auth.JWKSClient is JWKSClient
+        assert "JWKSClient" in pico_client_auth.__all__
+
+    def test_plain_component_registered_under_the_key_wins_resolution(self):
+        import sys
+
+        from pico_ioc import DictSource, configuration, init
+
+        cfg = configuration(DictSource({"auth_client": {"enabled": True, "issuer": "https://t", "audience": "t"}}))
+        container = init(modules=["pico_client_auth", sys.modules[__name__]], config=cfg)
+
+        resolved = container.get(JWKSClient)
+        assert isinstance(resolved, LocalKeys), "the @component(name=JWKSClient) override must win"
+        assert not issubclass(LocalKeys, JWKSClient), "and it must win without subclassing"
+
+
+@component(name=JWKSClient, primary=True)
+class LocalKeys:
+    """A key source that is deliberately NOT a JWKSClient subclass."""
+
+    async def get_key(self, kid: str) -> dict:
+        return {"kid": kid, "kty": "oct"}

@@ -11,6 +11,7 @@ Public API:
     Decorators: allow_anonymous, requires_role, requires_group, requires_scope
     Helpers: scope_matches, any_scope_matches
     Protocols: RoleResolver
+    Replaceable components: JWKSClient
     Configuration: AuthClientSettings
     Errors: AuthClientError, MissingTokenError, TokenExpiredError,
             TokenInvalidError, InsufficientPermissionsError,
@@ -28,6 +29,7 @@ from .errors import (
     TokenExpiredError,
     TokenInvalidError,
 )
+from .jwks_client import JWKSClient
 from .models import TokenClaims
 from .role_resolver import RoleResolver
 from .scope import any_scope_matches, requires_scope, scope_matches
@@ -45,6 +47,7 @@ __all__ = [
     "requires_scope",
     "scope_matches",
     "RoleResolver",
+    "JWKSClient",
     "AuthClientSettings",
     "AuthClientError",
     "MissingTokenError",
