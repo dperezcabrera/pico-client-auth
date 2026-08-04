@@ -42,6 +42,7 @@ class ApiController:
 - `requires_scope(*scopes: str)` — Mark an endpoint as requiring at least one of the given scopes
 - `scope_matches(granted: str, required: str)` — Return True if `granted` satisfies `required`.
 - `class RoleResolver(Protocol)` — Protocol for resolving user roles from JWT claims.
+- `class JWKSClient` — Fetches and caches the JSON Web Key Set from the auth server.
 - `class AuthClientSettings` — Type-safe settings for the auth client, loaded from configuration sources.
 - `class AuthClientError(Exception)` — Base error for all pico-client-auth exceptions.
 - `class MissingTokenError(AuthClientError)` — No Bearer token found in the Authorization header.
