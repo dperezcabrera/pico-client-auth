@@ -6,7 +6,7 @@ This guide covers enabling ML-DSA-65 and ML-DSA-87 post-quantum signature verifi
 
 ## Prerequisites
 
-- Python 3.11+
+- Python 3.11+ (tested on 3.11, 3.12, 3.13 and 3.14)
 - `liboqs` C library installed on the system
 - `liboqs-python` Python bindings
 

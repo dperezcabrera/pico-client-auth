@@ -4,7 +4,7 @@ This guide walks you through adding JWT authentication to a pico-fastapi applica
 
 ## Prerequisites
 
-- **Python 3.11** or newer
+- **Python 3.11** or newer (tested on 3.11, 3.12, 3.13 and 3.14)
 - A working pico-fastapi application
 - A JWT issuer (auth server) that exposes a JWKS endpoint
 

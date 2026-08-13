@@ -14,7 +14,7 @@
 
 **[Pico-Client-Auth](https://github.com/dperezcabrera/pico-client-auth)** provides JWT authentication for **[pico-fastapi](https://github.com/dperezcabrera/pico-fastapi)** applications. It integrates with the pico-ioc container to deliver automatic Bearer token validation, a request-scoped `SecurityContext`, role-based access control, and JWKS key rotation support.
 
-> Requires Python 3.11+
+> Requires Python 3.11+ (tested on 3.11, 3.12, 3.13 and 3.14)
 > Built on pico-fastapi + pico-ioc
 > Fully async-compatible
 > Real JWKS-based token validation
