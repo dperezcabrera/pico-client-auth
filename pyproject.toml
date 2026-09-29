@@ -39,9 +39,9 @@ classifiers = [
 ]
 
 dependencies = [
-    "pico-ioc >= 2.2.4",
-    "pico-fastapi >= 0.3.0",
-    "PyJWT[crypto] >= 2.8",
+    "pico-ioc >= 2.3.3",
+    "pico-fastapi >= 0.3.1",
+    "PyJWT[crypto] >= 2.9.0",
     "httpx >= 0.28",
 ]
 

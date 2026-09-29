@@ -8,6 +8,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Dependency floors raised to what the test suite proves: `pico-ioc >= 2.3.3` (was 2.2.4), `pico-fastapi >= 0.3.1` (was 0.3.0, which drops the `@allow_anonymous` marker so public routes answer 401) and `PyJWT >= 2.9.0` (was 2.8, which rejects the key objects this module passes). A new CI job runs the suite with every declared floor pinned, so a floor that installs but does not work can no longer ship.
+
 ## v0.7.0 — Replaceable key source (2026-08-04)
 
 ### Added
