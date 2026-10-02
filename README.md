@@ -1,7 +1,7 @@
 # Pico-Client-Auth
 
 [![PyPI](https://img.shields.io/pypi/v/pico-client-auth.svg)](https://pypi.org/project/pico-client-auth/)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/dperezcabrera/pico-client-auth)
+[![Ask DeepWiki](https://img.shields.io/badge/Ask-DeepWiki-blue)](https://deepwiki.com/dperezcabrera/pico-client-auth)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 ![CI (tox matrix)](https://github.com/dperezcabrera/pico-client-auth/actions/workflows/ci.yml/badge.svg)
 [![codecov](https://codecov.io/gh/dperezcabrera/pico-client-auth/branch/main/graph/badge.svg)](https://codecov.io/gh/dperezcabrera/pico-client-auth)
